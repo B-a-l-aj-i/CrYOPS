@@ -3,9 +3,10 @@
 import * as React from "react"
 import { InputField } from "@/components/input-field"
 import { Twitter, Instagram, Youtube, BookOpen, Globe } from "lucide-react"
+import { useState } from "react"
 
 export function SocialPresence() {
-  const [companyMode] = React.useState(false)
+  const [companyMode] = useState(false)
 
   return (
     <section className="mb-12 border rounded-lg p-7">

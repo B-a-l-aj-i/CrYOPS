@@ -3,6 +3,7 @@
 import * as React from "react"
 import { Upload, File } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useRef, useState } from "react"
 
 interface FileUploadProps {
   onFileSelect?: (file: File) => void
@@ -17,8 +18,8 @@ export function FileUpload({
   maxSize = 10 * 1024 * 1024, // 10MB
   className,
 }: FileUploadProps) {
-  const [isDragging, setIsDragging] = React.useState(false)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()

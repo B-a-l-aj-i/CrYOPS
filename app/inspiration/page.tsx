@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Search, ExternalLink } from "lucide-react"
+import { useState } from "react"
 
 interface InspirationSite {
   id: string
@@ -77,8 +78,8 @@ const inspirationSites: InspirationSite[] = [
 ]
 
 export default function InspirationPage() {
-  const [searchQuery, setSearchQuery] = React.useState("")
-  const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const categories = Array.from(new Set(inspirationSites.map((site) => site.category)))
 
