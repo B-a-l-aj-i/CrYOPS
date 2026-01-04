@@ -1,19 +1,19 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { PaintRollerIcon, User } from "lucide-react"
+import { PaintRollerIcon } from "lucide-react"
 import { Main } from "@/components/main"
+import { Profile } from "@/components/profile"
 
-export default function Home() {
+
+export default function App() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           <h1 className="text-2xl font-bold text-primary">CrYOPS</h1>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-            <User className="h-5 w-5 text-muted-foreground" />
-          </div>
+          <Profile />
         </div>
       </header>
 
