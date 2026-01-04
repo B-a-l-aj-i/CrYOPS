@@ -14,7 +14,7 @@ export function Profile() {
   const { data: session, status } = useSession();
 
   const handleSignIn = () => {
-    signIn("github");
+    signIn();
   };
 
   const handleSignOut = () => {

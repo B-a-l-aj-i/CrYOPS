@@ -13,6 +13,7 @@ interface InputFieldProps {
   value?: string
   onChange?: (value: string) => void
   className?: string
+  rightButton?: React.ReactNode
 }
 
 export function InputField({
@@ -22,6 +23,7 @@ export function InputField({
   value,
   onChange,
   className,
+  rightButton,
 }: InputFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
@@ -33,8 +35,13 @@ export function InputField({
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
-          className="pl-10"
+          className={cn("pl-10", rightButton && "pr-20")}
         />
+        {rightButton && (
+          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+            {rightButton}
+          </div>
+        )}
       </div>
     </div>
   )
