@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { usePortfolio } from "@/contexts/portfolio-context"
 
 const CODING_PLATFORMS = [
   { value: "leetcode", label: "LeetCode", icon: Code },
@@ -30,6 +31,7 @@ interface CodingPlatform {
 }
 
 export function CodingPlatforms() {
+  const { setLeetCodeData } = usePortfolio()
   const [codingPlatforms, setCodingPlatforms] = useState<CodingPlatform[]>([])
   const [selectedPlatform, setSelectedPlatform] = useState<string>("")
   const [usernameInput, setUsernameInput] = useState<string>("")
@@ -88,9 +90,27 @@ export function CodingPlatforms() {
         )
       )
 
-      if (result.success && result.valid) {
+      if (result.success && result.valid && platform.platform === "leetcode") {
         console.log("Validated profile:", result.data)
-        // You can store this data in state or context
+        // Fetch full LeetCode details
+        try {
+          const detailsResponse = await fetch("/api/leetcode/get-details", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              url: platform.url,
+            }),
+          })
+
+          const detailsResult = await detailsResponse.json()
+          
+          if (detailsResult.success && detailsResult.data) {
+            setLeetCodeData(detailsResult.data)
+            console.log("LeetCode details stored in context:", detailsResult.data)
+          }
+        } catch (detailsError) {
+          console.error("Failed to fetch LeetCode details:", detailsError)
+        }
       }
     } catch (error) {
       console.error("Validation failed:", error)

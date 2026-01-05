@@ -1,12 +1,26 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PaintRollerIcon } from "lucide-react"
 import { Main } from "@/components/main"
 import { Profile } from "@/components/profile"
-
+import { PortfolioPreview } from "@/components/portfolio-preview"
+import { usePortfolio } from "@/contexts/portfolio-context"
 
 export default function App() {
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const { portfolioData } = usePortfolio()
+
+  const handleBuild = () => {
+    // Check if we have at least LeetCode data
+    if (!portfolioData.leetcode) {
+      alert("Please validate your LeetCode profile first before building the preview.")
+      return
+    }
+    setIsPreviewOpen(true)
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -35,11 +49,18 @@ export default function App() {
         {/* Action Buttons */}
         <div className="flex justify-end gap-4 pt-6">
           <Button variant="outline">Save Draft</Button>
-          <Button>Build
-            <PaintRollerIcon className="h-4 w-4" />
+          <Button onClick={handleBuild}>
+            Build
+            <PaintRollerIcon className="h-4 w-4 ml-2" />
           </Button>
         </div>
       </main>
+
+      {/* Portfolio Preview Modal */}
+      <PortfolioPreview
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+      />
     </div>
   )
 }
