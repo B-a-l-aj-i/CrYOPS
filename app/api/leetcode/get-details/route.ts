@@ -27,6 +27,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      return Response.json(
+        { success: false, error: "Invalid URL format" },
+        { status: 400 }
+      );
+    }
+
     // Extract username from URL
     const username = extractUsernameFromUrl(url);
     if (!username) {
@@ -36,13 +46,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate LeetCode domain
+    const urlObj = new URL(url);
+    if (!urlObj.hostname.includes("leetcode.com")) {
+      return Response.json(
+        { success: false, error: "Invalid LeetCode URL" },
+        { status: 400 }
+      );
+    }
+
     try {
       // Fetch comprehensive profile data from Alfa LeetCode API
-      const [profileResponse, solvedResponse, badgesResponse, contestResponse] = await Promise.all([
-        fetch(`${LEETCODE_API_BASE}/${username}`, {
-          headers: { "User-Agent": "Mozilla/5.0" },
-        }),
-        fetch(`${LEETCODE_API_BASE}/${username}/solved`, {
+      // Based on: https://github.com/alfaarghya/alfa-leetcode-api/
+      // The /profile endpoint returns all needed data including stats and submissions
+      // The /calendar endpoint provides streak and active years data
+      const [profileResponse, badgesResponse, contestResponse, calendarResponse] = await Promise.all([
+        fetch(`${LEETCODE_API_BASE}/${username}/profile`, {
           headers: { "User-Agent": "Mozilla/5.0" },
         }),
         fetch(`${LEETCODE_API_BASE}/${username}/badges`, {
@@ -51,50 +70,157 @@ export async function POST(request: NextRequest) {
         fetch(`${LEETCODE_API_BASE}/${username}/contest`, {
           headers: { "User-Agent": "Mozilla/5.0" },
         }),
+        fetch(`${LEETCODE_API_BASE}/${username}/calendar`, {
+          headers: { "User-Agent": "Mozilla/5.0" },
+        }),
       ]);
 
       const profileData = profileResponse.ok ? await profileResponse.json() : null;
-      const solvedData = solvedResponse.ok ? await solvedResponse.json() : null;
       const badgesData = badgesResponse.ok ? await badgesResponse.json() : null;
       const contestData = contestResponse.ok ? await contestResponse.json() : null;
+      const calendarData = calendarResponse.ok ? await calendarResponse.json() : null;
 
-      if (!profileData || !profileData.matchedUser) {
+      if (!profileData) {
         return Response.json({
           success: false,
           error: "Profile not found",
         });
       }
+      
+      // Get random recently submitted problem (from accepted submissions only)
+      interface Submission {
+        title: string;
+        titleSlug: string;
+        statusDisplay: string;
+        timestamp: string;
+        lang: string;
+      }
+      
+      const acceptedSubmissions = (profileData.recentSubmissions as Submission[])?.filter(
+        (sub) => sub.statusDisplay === "Accepted"
+      ) || [];
+      const randomProblem = acceptedSubmissions.length > 0
+        ? acceptedSubmissions[Math.floor(Math.random() * acceptedSubmissions.length)]
+        : null;
 
-      // Combine all data into a comprehensive response
+      // Calculate acceptance rate
+      const totalSubmissions = profileData.totalSubmissions?.[0]?.submissions || 0;
+      const totalAccepted = profileData.totalSolved || 0;
+      const acceptanceRate = totalSubmissions > 0 
+        ? parseFloat(((totalAccepted / totalSubmissions) * 100).toFixed(1))
+        : 0;
+
+      // Extract streak and active years from calendar endpoint
+      // Calendar data structure: { activeYears: [2023, 2024], streak: 0, totalActiveDays: 0, submissionCalendar: '{}' }
+      const currentStreak = calendarData?.streak || 0;
+      const activeYears = calendarData?.activeYears || [];
+      const submissionCalendar = calendarData?.submissionCalendar 
+        ? (typeof calendarData.submissionCalendar === 'string' 
+            ? JSON.parse(calendarData.submissionCalendar) 
+            : calendarData.submissionCalendar)
+        : {};
+
+      // Calculate longest streak from submission calendar if available
+      let longestStreak = currentStreak; // Default to current streak
+      if (Object.keys(submissionCalendar).length > 0) {
+        const calendarEntries = Object.entries(submissionCalendar);
+        const sortedEntries = calendarEntries.sort((a, b) => {
+          const timestampA = typeof a[0] === 'string' ? parseInt(a[0]) : (a[0] as number);
+          const timestampB = typeof b[0] === 'string' ? parseInt(b[0]) : (b[0] as number);
+          return timestampA - timestampB;
+        });
+
+        let tempStreak = 0;
+        for (let i = 0; i < sortedEntries.length; i++) {
+          const [timestamp, count] = sortedEntries[i];
+          if ((count as number) > 0) {
+            if (i === 0) {
+              tempStreak = 1;
+            } else {
+              const prevTimestampKey = sortedEntries[i - 1][0];
+              const prevTimestamp = typeof prevTimestampKey === 'string' 
+                ? parseInt(prevTimestampKey) 
+                : (prevTimestampKey as unknown as number);
+              const timestampNum = typeof timestamp === 'string' ? parseInt(timestamp) : timestamp;
+              const oneDay = 86400;
+              const daysDiff = Math.floor((timestampNum - prevTimestamp) / oneDay);
+              
+              if (daysDiff === 1) {
+                tempStreak++;
+              } else {
+                longestStreak = Math.max(longestStreak, tempStreak);
+                tempStreak = 1;
+              }
+            }
+          } else {
+            longestStreak = Math.max(longestStreak, tempStreak);
+            tempStreak = 0;
+          }
+        }
+        longestStreak = Math.max(longestStreak, tempStreak);
+      }
+
+      // Structure response for UI
       return Response.json({
         success: true,
         data: {
-          profile: {
-            username: profileData.matchedUser.username,
-            realName: profileData.matchedUser.profile?.realName,
-            aboutMe: profileData.matchedUser.profile?.aboutMe,
-            avatar: profileData.matchedUser.profile?.userAvatar,
-            ranking: profileData.matchedUser.profile?.ranking,
-            reputation: profileData.matchedUser.profile?.reputation,
-            githubUrl: profileData.matchedUser.githubUrl,
-            twitterUrl: profileData.matchedUser.twitterUrl,
-            linkedinUrl: profileData.matchedUser.linkedinUrl,
-            websiteUrl: profileData.matchedUser.websiteUrl,
-            company: profileData.matchedUser.profile?.company,
-            school: profileData.matchedUser.profile?.school,
-            location: profileData.matchedUser.profile?.location,
-            skillTags: profileData.matchedUser.profile?.skillTags,
-          },
+          // Rank
+          rank: profileData.ranking || 0,
+          
+          // Problem solving statistics
           stats: {
-            totalSolved: solvedData?.totalSolved || 0,
-            totalQuestions: solvedData?.totalQuestions || 0,
-            easySolved: solvedData?.easySolved || 0,
-            mediumSolved: solvedData?.mediumSolved || 0,
-            hardSolved: solvedData?.hardSolved || 0,
-            acceptanceRate: solvedData?.acceptanceRate || 0,
+            totalSolved: profileData.totalSolved || 0,
+            totalQuestions: profileData.totalQuestions || 0,
+            easySolved: profileData.easySolved || 0,
+            totalEasy: profileData.totalEasy || 0,
+            mediumSolved: profileData.mediumSolved || 0,
+            totalMedium: profileData.totalMedium || 0,
+            hardSolved: profileData.hardSolved || 0,
+            totalHard: profileData.totalHard || 0,
+            acceptanceRate: acceptanceRate,
+            totalSubmissions: totalSubmissions,
           },
-          badges: badgesData?.badges || [],
-          contests: contestData?.userContestRanking || null,
+          
+          // Submission breakdown by difficulty
+          submissionBreakdown: profileData.totalSubmissions || [],
+          
+          // Recent badges
+          recentBadges: badgesData?.badges?.slice(0, 3) || [],
+          
+          // Upcoming badges
+          upcomingBadges: badgesData?.upcomingBadges || [],
+          
+          // Streak and active years (from /calendar endpoint)
+          streak: {
+            current: currentStreak,
+            longest: longestStreak,
+            totalActiveDays: calendarData?.totalActiveDays || 0,
+            activeYears: activeYears.map((year: number) => year.toString()).sort(),
+          },
+          
+          // Contest ranking
+          contestRanking: contestData?.userContestRanking || null,
+          
+          // Recent submissions
+          recentSubmissions: profileData.recentSubmissions || [],
+          
+          // Random problem for daily challenge
+          randomProblem: randomProblem ? {
+            title: randomProblem.title,
+            titleSlug: randomProblem.titleSlug,
+            url: `https://leetcode.com/problems/${randomProblem.titleSlug}/`,
+          } : null,
+          
+          // Additional profile info
+          profile: {
+            username: username,
+            reputation: profileData.reputation || 0,
+            contributionPoint: profileData.contributionPoint || 0,
+          },
+          
+          // Calendar data
+          submissionCalendar: submissionCalendar,
+          
           profileUrl: url,
         },
       });
