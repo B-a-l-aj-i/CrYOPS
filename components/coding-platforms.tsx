@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useLeetCodeStore } from "@/app/store"
 
 const CODING_PLATFORMS = [
   { value: "leetcode", label: "LeetCode", icon: Code },
@@ -90,7 +91,7 @@ export function CodingPlatforms() {
 
       if (result.success && result.valid) {
         console.log("Validated profile:", result.data)
-        // You can store this data in state or context
+        useLeetCodeStore.setState({ leetCodeUrl: result.data.profileUrl })
       }
     } catch (error) {
       console.error("Validation failed:", error)

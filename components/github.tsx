@@ -5,9 +5,10 @@ import { Github, Loader2, Check, X } from "lucide-react"
 import { InputField } from "@/components/input-field"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useGithubStore } from "@/app/store"
 
 export function GitHub() {
-  const [githubProfile, setGithubProfile] = useState<string>("")
+  const [githubProfile, setGithubProfile] = useState<string>("https://github.com/B-a-l-aj-i")
   const [isValidatingGithub, setIsValidatingGithub] = useState<boolean>(false)
   const [githubValidationStatus, setGithubValidationStatus] = useState<"success" | "error" | null>(null)
 
@@ -24,6 +25,7 @@ export function GitHub() {
       
       if (data.valid) {
         setGithubValidationStatus("success")
+        useGithubStore.setState({ githubUrl: githubProfile })
       } else {
         setGithubValidationStatus("error")
       }
