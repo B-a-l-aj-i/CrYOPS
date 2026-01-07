@@ -16,19 +16,22 @@ export function CoreSources() {
         We&apos;ll extract your skills, experience, and projects from these
         sources.
       </p>
-      <div className="space-y-4">
+      <div className="space-y-4 opacity-50 pointer-events-none">
         <InputField
           label="LinkedIn Profile"
           placeholder="linkedin.com/in/username"
           icon={Linkedin}
+          disabled={true}
         />
+      </div>
+      <div className="space-y-4">
         <GitHub />
         <CodingPlatforms />
+      </div>
 
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Resume / CV</Label>
-          <FileUpload accept=".pdf,.docx" maxSize={10 * 1024 * 1024} />
-        </div>
+      <div className="space-y-2 opacity-50 pointer-events-none">
+        <Label className="text-sm font-medium">Resume / CV</Label>
+        <FileUpload accept=".pdf,.docx" maxSize={10 * 1024 * 1024} />
       </div>
     </section>
   )

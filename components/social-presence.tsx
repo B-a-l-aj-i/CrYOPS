@@ -9,7 +9,7 @@ export function SocialPresence() {
   const [companyMode] = useState(false)
 
   return (
-    <section className="mb-12 border rounded-lg p-7">
+    <section className="mb-12 border rounded-lg p-7 opacity-50 pointer-events-none">
       <h3 className="mb-2 text-xl font-semibold">Social Presence & Blogs</h3>
       <p className="mb-6 text-sm text-muted-foreground">
         Add links to where you are active. Leave empty if not applicable.
@@ -19,27 +19,32 @@ export function SocialPresence() {
           label="X (Twitter)"
           placeholder="x.com/username"
           icon={Twitter}
+          disabled={true}
         />
         <InputField
           label="Instagram"
           placeholder="instagram.com/user"
           icon={Instagram}
+          disabled={true}
         />
         <InputField
           label="YouTube"
           placeholder="youtube.com/@channel"
           icon={Youtube}
+          disabled={true}
         />
         <InputField
           label="Medium / Blog"
           placeholder="medium.com/@writer"
           icon={BookOpen}
+          disabled={true}
         />
         {companyMode && (
           <InputField
             label="Existing Company Site / Inspiration URL"
             placeholder="https://mycompany.com"
             icon={Globe}
+            disabled={true}
           />
         )}
       </div>

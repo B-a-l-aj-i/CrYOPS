@@ -14,6 +14,7 @@ interface InputFieldProps {
   onChange?: (value: string) => void
   className?: string
   rightButton?: React.ReactNode
+  disabled?: boolean
 }
 
 export function InputField({
@@ -24,6 +25,7 @@ export function InputField({
   onChange,
   className,
   rightButton,
+  disabled,
 }: InputFieldProps) {
   return (
     <div className={cn("space-y-2", className)}>
@@ -36,6 +38,8 @@ export function InputField({
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           className={cn("pl-10", rightButton && "pr-20")}
+          disabled={disabled}
+          readOnly={disabled}
         />
         {rightButton && (
           <div className="absolute right-2 top-1/2 -translate-y-1/2">

@@ -4,7 +4,7 @@ import { ArrowRight } from "lucide-react"
 
 export function SelectInspiration() {
   return (
-    <section className="mb-12 border rounded-lg p-7">
+    <section className="mb-12 border rounded-lg p-7 opacity-50 pointer-events-none">
       <div className="mb-1 flex items-center justify-between">
         <div>
           <h3 className="mb-2 text-xl font-semibold">Selected Inspiration</h3>
@@ -12,8 +12,8 @@ export function SelectInspiration() {
             You haven&apos;t selected any inspiration yet, click to view available inspirations.
           </p>
         </div>
-        <Link href="/inspiration">
-          <Button variant="outline">
+        <Link href="/inspiration" className="cursor-not-allowed" >
+          <Button variant="outline" disabled className="cursor-not-allowed">
             Browse Inspirations
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
