@@ -1,9 +1,8 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { PaintRollerIcon } from "lucide-react"
 import { Main } from "@/components/main"
 import { Profile } from "@/components/profile"
+import { Build } from "@/components/build"
 
 
 export default function App() {
@@ -33,12 +32,7 @@ export default function App() {
         <Main />
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-4 pt-6">
-          <Button variant="outline">Save Draft</Button>
-          <Button>Build
-            <PaintRollerIcon className="h-4 w-4" />
-          </Button>
-        </div>
+        <Build />
       </main>
     </div>
   )
