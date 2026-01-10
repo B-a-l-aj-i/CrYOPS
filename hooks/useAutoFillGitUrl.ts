@@ -19,13 +19,16 @@ export function useAutoFillGitHubUrl() {
   const previousSessionUserIdRef = useRef<string | null>(null)
 
   useEffect(() => {
+    // Read current store value inside effect to avoid dependency on githubUrl
+    // This prevents the effect from re-running when user manually updates the store
+    const currentStoreUrl = useGithubStore.getState().githubUrl
     const user = session?.user as { githubProfileUrl?: string; email?: string | null; name?: string | null } | undefined
     const sessionGitHubUrl = user?.githubProfileUrl
     const currentSessionUserId = getSessionUserId(session)
 
     if (!session) {
       // No session: clear the store to prevent showing previous user's data
-      if (githubUrl) {
+      if (currentStoreUrl) {
         useGithubStore.setState({ githubUrl: "" })
       }
       previousSessionUserIdRef.current = null
@@ -46,13 +49,16 @@ export function useAutoFillGitHubUrl() {
     // 1. Store is empty (initial auto-fill), OR
     // 2. User switched accounts (detected by session user ID change)
     // Do NOT update if user manually entered a different URL for the same account
-    if (!githubUrl || userSwitched) {
+    // (when same user and store already has a URL, respect the user's manual entry)
+    const shouldAutoFill = !currentStoreUrl || userSwitched
+
+    if (shouldAutoFill) {
       useGithubStore.setState({ githubUrl: sessionGitHubUrl })
     }
 
     // Update the ref to track the current session user
     previousSessionUserIdRef.current = currentSessionUserId
-  }, [session, githubUrl])
+  }, [session]) // Only depend on session, not githubUrl
 
   return githubUrl
 }
