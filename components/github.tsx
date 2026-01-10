@@ -24,6 +24,7 @@ export function GitHub() {
     // Only update if the auto-filled URL actually changed
     if (previousUrl !== currentUrl) {
       setGithubProfile(currentUrl)
+      setGithubValidationStatus(null)
       previousAutoFilledUrlRef.current = currentUrl
     }
   }, [autoFilledUrl])
