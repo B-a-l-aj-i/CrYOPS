@@ -19,7 +19,8 @@ export function GitHub() {
     if (autoFilledUrl && !githubProfile.trim()) {
       setGithubProfile(autoFilledUrl)
     }
-  }, [autoFilledUrl, githubProfile])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFilledUrl])
 
   const handleValidateGithub = async () => {
     if (!githubProfile.trim()) return
