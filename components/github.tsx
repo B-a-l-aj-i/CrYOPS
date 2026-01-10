@@ -1,18 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
 import { Github, Loader2, Check, X } from "lucide-react"
 import { InputField } from "@/components/input-field"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useGithubStore } from "@/app/store"
+import { useAutoFillGitHubUrl } from "@/hooks/useAutoFillGitUrl"
 
 export function GitHub() {
-  const { data: session } = useSession()
+  const autoFilledUrl = useAutoFillGitHubUrl()
   const [githubProfile, setGithubProfile] = useState<string>("")
   const [isValidatingGithub, setIsValidatingGithub] = useState<boolean>(false)
   const [githubValidationStatus, setGithubValidationStatus] = useState<"success" | "error" | null>(null)
+
+  // Sync local state with store when auto-filled
+  useEffect(() => {
+    if (autoFilledUrl && !githubProfile.trim()) {
+      setGithubProfile(autoFilledUrl)
+    }
+  }, [autoFilledUrl, githubProfile])
 
   const handleValidateGithub = async () => {
     if (!githubProfile.trim()) return
@@ -38,22 +45,6 @@ export function GitHub() {
       setIsValidatingGithub(false)
     }
   }
-  
-  // Auto-fill GitHub URL from session when user logs in
-  useEffect(() => {
-    if (session?.user) {
-      const user = session.user as { githubProfileUrl?: string }
-      if (user.githubProfileUrl) {
-        const githubUrl = user.githubProfileUrl
-        // Only auto-fill if the field is currently empty
-        if (!githubProfile.trim()) {
-          setGithubProfile(githubUrl)
-          // Update the store with the GitHub URL
-          useGithubStore.setState({ githubUrl })
-        }
-      }
-    }
-  }, [session, githubProfile])
 
   // Reset validation status when input changes
   const handleGithubProfileChange = (value: string) => {
@@ -96,4 +87,3 @@ export function GitHub() {
     />
   )
 }
-

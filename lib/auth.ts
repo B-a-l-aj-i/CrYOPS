@@ -36,7 +36,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, account, profile }) {
       // When user signs in with GitHub, store the profile URL in the token
       if (account?.provider === "github" && profile) {
-        const githubProfile = profile as unknown as GitHubProfile
+        const githubProfile = profile as GitHubProfile
         const tokenWithGithub = token as typeof token & { githubProfileUrl?: string }
         tokenWithGithub.githubProfileUrl = githubProfile.html_url || (githubProfile.login ? `https://github.com/${githubProfile.login}` : undefined)
       }
