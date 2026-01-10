@@ -1,0 +1,74 @@
+# Cursor Rules for CrYOPS
+
+## Git Commit Messages
+
+**CRITICAL: When generating commit messages, ALWAYS use Conventional Commits format. should be short and precise **
+
+### Required Format:
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+### Commit Types (required):
+- `feat`: A new feature
+- `fix`: A bug fix
+- `docs`: Documentation only changes
+- `style`: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
+- `refactor`: A code change that neither fixes a bug nor adds a feature
+- `perf`: A code change that improves performance
+- `test`: Adding missing tests or correcting existing tests
+- `build`: Changes that affect the build system or external dependencies
+- `ci`: Changes to CI configuration files and scripts
+- `chore`: Other changes that don't modify src or test files
+- `revert`: Reverts a previous commit
+
+### Scope (optional, but recommended):
+- `ui`: UI components and styling
+- `api`: API routes and endpoints
+- `store`: State management (Zustand)
+- `auth`: Authentication
+- `github`: GitHub integration
+- `leetcode`: LeetCode integration
+- `config`: Configuration files
+- `build`: Build component
+- `about`: About component
+
+### Rules for Commit Messages:
+1. **Type is REQUIRED** - Always start with a type
+2. **Subject line**:
+   - Use imperative mood ("add" not "added" or "adds")
+   - Lowercase (except for proper nouns)
+   - No period at the end
+   - Maximum 50 characters
+   - Describe what the commit does
+3. **Body (optional but recommended for complex changes)**:
+   - Explain "what" and "why" (not "how")
+   - Wrap at 72 characters
+   - Separate from subject with blank line
+
+### Examples:
+- `feat(ui): add About component with profile display`
+- `fix(api): handle null data in GitHub API response`
+- `refactor(store): centralize type definitions in store.ts`
+- `fix(build): add URL validation before API calls`
+- `style(ui): update button styling to use rounded-2xl`
+- `docs: update README with setup instructions`
+- `chore: configure conventional commits in .cursorrules`
+
+### When Generating Commit Messages:
+1. Analyze the actual changes in the git diff
+2. Determine the most appropriate type based on the changes
+3. Identify the scope if the change affects a specific area
+4. Write a clear, concise subject line in imperative mood
+5. Add a body if the change is complex or needs explanation
+6. Always follow the format: `<type>(<scope>): <subject>`
+
+### Important:
+- NEVER generate commit messages without the type prefix
+- NEVER use past tense in the subject line
+- ALWAYS use lowercase for the subject (except proper nouns)
+- ALWAYS analyze the actual code changes before generating the message

@@ -24,7 +24,7 @@ export default function EditYOPS() {
           <Card className="max-w-md shadow-lg hover:shadow-xl transition-shadow duration-300">
             <CardContent className="p-6">
               <p className="text-center text-muted-foreground">
-                No data available. Please complete the profile setup first.
+                No data available. Try again with valid URLs.
               </p>
             </CardContent>
           </Card>
