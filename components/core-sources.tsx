@@ -24,12 +24,12 @@ export function CoreSources() {
           disabled={true}
         />
       </div>
-      <div className="space-y-4">
+      <div className="space-y-4 mt-4">
         <GitHub />
         <CodingPlatforms />
       </div>
 
-      <div className="space-y-2 opacity-50 pointer-events-none">
+      <div className="space-y-2 mt-6 opacity-50 pointer-events-none">
         <Label className="text-sm font-medium">Resume / CV</Label>
         <FileUpload accept=".pdf,.docx" maxSize={10 * 1024 * 1024} />
       </div>

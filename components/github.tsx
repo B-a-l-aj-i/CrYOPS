@@ -1,16 +1,33 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Github, Loader2, Check, X } from "lucide-react"
 import { InputField } from "@/components/input-field"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useGithubStore } from "@/app/store"
+import { useAutoFillGitHubUrl } from "@/hooks/useAutoFillGitUrl"
 
 export function GitHub() {
-  const [githubProfile, setGithubProfile] = useState<string>("https://github.com/B-a-l-aj-i")
+  const autoFilledUrl = useAutoFillGitHubUrl()
+  const [githubProfile, setGithubProfile] = useState<string>("")
   const [isValidatingGithub, setIsValidatingGithub] = useState<boolean>(false)
   const [githubValidationStatus, setGithubValidationStatus] = useState<"success" | "error" | null>(null)
+  const previousAutoFilledUrlRef = useRef<string>("")
+
+  // Sync local state with store whenever autoFilledUrl changes
+  // This handles: initial auto-fill, account switches, and sign-out
+  useEffect(() => {
+    const previousUrl = previousAutoFilledUrlRef.current
+    const currentUrl = autoFilledUrl || ""
+    
+    // Only update if the auto-filled URL actually changed
+    if (previousUrl !== currentUrl) {
+      setGithubProfile(currentUrl)
+      setGithubValidationStatus(null)
+      previousAutoFilledUrlRef.current = currentUrl
+    }
+  }, [autoFilledUrl])
 
   const handleValidateGithub = async () => {
     if (!githubProfile.trim()) return
@@ -36,7 +53,7 @@ export function GitHub() {
       setIsValidatingGithub(false)
     }
   }
-  
+
   // Reset validation status when input changes
   const handleGithubProfileChange = (value: string) => {
     setGithubProfile(value)
@@ -78,4 +95,3 @@ export function GitHub() {
     />
   )
 }
-
