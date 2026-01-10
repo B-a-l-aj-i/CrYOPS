@@ -1,0 +1,25 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "leetcode",
+    "YOPS",
+    "CrYOPS",
+    "cryops",
+    "editYOPS",
+    "zustand",
+    "nextjs",
+    "tailwindcss",
+    "radix",
+    "lucide",
+    "clsx",
+    "geist",
+    "vercel",
+    "shadcn",
+    "html",
+    "tsx",
+    "tsbuildinfo"
+  ],
+  "ignoreWords": [],
+  "flagWords": []
+}
