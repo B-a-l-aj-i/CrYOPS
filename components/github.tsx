@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
 import { Github, Loader2, Check, X } from "lucide-react"
 import { InputField } from "@/components/input-field"
 import { Button } from "@/components/ui/button"
@@ -8,7 +9,8 @@ import { cn } from "@/lib/utils"
 import { useGithubStore } from "@/app/store"
 
 export function GitHub() {
-  const [githubProfile, setGithubProfile] = useState<string>("https://github.com/B-a-l-aj-i")
+  const { data: session } = useSession()
+  const [githubProfile, setGithubProfile] = useState<string>("")
   const [isValidatingGithub, setIsValidatingGithub] = useState<boolean>(false)
   const [githubValidationStatus, setGithubValidationStatus] = useState<"success" | "error" | null>(null)
 
@@ -37,6 +39,22 @@ export function GitHub() {
     }
   }
   
+  // Auto-fill GitHub URL from session when user logs in
+  useEffect(() => {
+    if (session?.user) {
+      const user = session.user as { githubProfileUrl?: string }
+      if (user.githubProfileUrl) {
+        const githubUrl = user.githubProfileUrl
+        // Only auto-fill if the field is currently empty
+        if (!githubProfile.trim()) {
+          setGithubProfile(githubUrl)
+          // Update the store with the GitHub URL
+          useGithubStore.setState({ githubUrl })
+        }
+      }
+    }
+  }, [session, githubProfile])
+
   // Reset validation status when input changes
   const handleGithubProfileChange = (value: string) => {
     setGithubProfile(value)
