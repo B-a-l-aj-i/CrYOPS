@@ -14,7 +14,7 @@ function getSessionUserId(session: { user?: { email?: string | null; name?: stri
 }
 
 export function useAutoFillGitHubUrl() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const githubUrl = useGithubStore((state) => state.githubUrl)
   const previousSessionUserIdRef = useRef<string | null>(null)
 
@@ -26,12 +26,19 @@ export function useAutoFillGitHubUrl() {
     const sessionGitHubUrl = user?.githubProfileUrl
     const currentSessionUserId = getSessionUserId(session)
 
-    if (!session) {
+    // Only clear store when actually unauthenticated, not during loading
+    // This prevents clearing during brief loading states during client-side navigation
+    if (status === "unauthenticated") {
       // No session: clear the store to prevent showing previous user's data
       if (currentStoreUrl) {
         useGithubStore.setState({ githubUrl: "" })
       }
       previousSessionUserIdRef.current = null
+      return
+    }
+
+    // Don't auto-fill while session is loading
+    if (status === "loading" || !session) {
       return
     }
 
@@ -58,7 +65,7 @@ export function useAutoFillGitHubUrl() {
 
     // Update the ref to track the current session user
     previousSessionUserIdRef.current = currentSessionUserId
-  }, [session]) // Only depend on session, not githubUrl
+  }, [session, status]) // Depend on both session and status to handle loading states correctly
 
   return githubUrl
 }
