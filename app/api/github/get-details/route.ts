@@ -9,6 +9,7 @@ import {
   validateContributionsData,
   validateReposData,
   validatePinnedReposData,
+  fetchAllRepos,
 } from "@/lib/github/helpers";
 import {
   type SanitizedRepo,
@@ -19,7 +20,7 @@ import { validateUserData } from "@/lib/github/helpers";
 
 const GITHUB_CONTRIBUTIONS_API =
   "https://github-contributions-api.jogruber.de/v4";
-const GITHUB_API_BASE = "https://api.github.com";
+export const GITHUB_API_BASE = "https://api.github.com";
 const PINNED_API_BASE = "https://pinned.berrysauce.dev/get";
 const GITHUB_ISSUES_API = "https://api.github.com/search/issues?q=author:";
 const GITHUB_PR_TYPE = "type:pr";
@@ -58,7 +59,6 @@ export async function POST(request: NextRequest) {
     const [
       userResponse,
       contributionsResponse,
-      reposResponse,
       pinnedResponse,
       issuesResponse,
       prsResponse,
@@ -71,12 +71,6 @@ export async function POST(request: NextRequest) {
       }),
       fetch(`${GITHUB_CONTRIBUTIONS_API}/${username}`, {
         headers: {
-          "User-Agent": "Mozilla/5.0",
-        },
-      }),
-      fetch(`${GITHUB_API_BASE}/users/${username}/repos`, {
-        headers: {
-          Accept: "application/vnd.github.v3+json",
           "User-Agent": "Mozilla/5.0",
         },
       }),
@@ -123,19 +117,6 @@ export async function POST(request: NextRequest) {
         `[GitHub API] Contributions API failed for ${username}:`,
         contributionsResponse.status,
         contributionsResponse.statusText
-      );
-    }
-
-    if (!reposResponse.ok) {
-      failures.push({
-        api: "GitHub Repos API",
-        status: reposResponse.status,
-        statusText: reposResponse.statusText,
-      });
-      console.error(
-        `[GitHub API] Repos API failed for ${username}:`,
-        reposResponse.status,
-        reposResponse.statusText
       );
     }
 
@@ -201,7 +182,7 @@ export async function POST(request: NextRequest) {
     const userData = validateUserData(rawUserData);
 
     // Get repos data
-    const rawReposData = await reposResponse.json();
+    const rawReposData = await fetchAllRepos(username);
     const reposData = validateReposData(rawReposData);
 
     // Get pinned data and validate

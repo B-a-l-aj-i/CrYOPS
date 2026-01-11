@@ -24,6 +24,7 @@ import {
   getCurrentYearContributions,
   filterContributionsByPeriod,
 } from "@/lib/github/utils";
+import { GITHUB_API_BASE } from "@/app/api/github/get-details/route";
 
 /**
  * Validate and sanitize user data from GitHub API
@@ -389,4 +390,36 @@ export function getActivelyMaintainedRepos(
     const pushed = new Date(repo.pushedAt);
     return pushed >= sixMonthsAgo;
   });
+}
+
+
+export async function fetchAllRepos(username: string) {
+  const perPage = 100; // max allowed
+  let page = 1;
+  const allRepos: GitHubRepoResponse[] = [];
+
+  while (true) {
+    const res = await fetch(
+      `${GITHUB_API_BASE}/users/${username}/repos?per_page=${perPage}&page=${page}`,
+      {
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+          "User-Agent": "Mozilla/5.0",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`GitHub API error: ${res.status}`);
+    }
+
+    const repos = await res.json();
+
+    if (repos.length === 0) break;
+
+    allRepos.push(...repos);
+    page++;
+  }
+
+  return allRepos;
 }
