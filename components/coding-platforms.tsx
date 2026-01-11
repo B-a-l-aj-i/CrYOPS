@@ -111,7 +111,7 @@ export function CodingPlatforms() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 opacity-50 pointer-events-none">
       <Label className="text-sm font-medium">Coding Platforms</Label>
       
       {/* Add Platform Form */}

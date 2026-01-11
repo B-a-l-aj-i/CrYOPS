@@ -8,11 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 
 
 export default function EditYOPS() {
-  const leetCodeData = useLeetCodeStore.getState().leetCodeData as LeetCodeData;
+  // const leetCodeData = useLeetCodeStore.getState().leetCodeData as LeetCodeData;
   const githubData = useGithubStore.getState().githubData as GitHubData;
   const router = useRouter();
 
-  if (!leetCodeData || !githubData) {
+  if (!githubData) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
         <div
@@ -35,7 +35,7 @@ export default function EditYOPS() {
 
   return (
     <div>
-      <About githubData={githubData} leetCodeData={leetCodeData} />
+      <About githubData={githubData} /* leetCodeData={leetCodeData} */ />
     </div>
   );
 }

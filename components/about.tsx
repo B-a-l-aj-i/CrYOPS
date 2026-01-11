@@ -5,12 +5,12 @@ import { GithubIcon, CodeIcon, GlobeIcon } from "lucide-react";
 import { GitHubData, LeetCodeData } from "@/app/store";
 interface AboutProps {
   githubData: GitHubData | null;
-  leetCodeData: LeetCodeData | null;
+  // leetCodeData: LeetCodeData | null;
 }
 
-export default function About({ githubData, leetCodeData }: AboutProps) {
+export default function About({ githubData /* , leetCodeData */ }: AboutProps) {
 
-  if (!githubData || !leetCodeData) {
+  if (!githubData /* || !leetCodeData */) {
     return <div>Loading...</div>;
   }
 
@@ -19,7 +19,7 @@ export default function About({ githubData, leetCodeData }: AboutProps) {
     name: githubData.profile.name,
     bio: githubData.profile.bio,
     githubUrl: githubData.profileUrl,
-    leetcodeUrl: leetCodeData.profileUrl,
+    // leetcodeUrl: leetCodeData.profileUrl,
     blog: githubData.profile.blog,
   };
 
@@ -58,7 +58,7 @@ export default function About({ githubData, leetCodeData }: AboutProps) {
           GitHub
         </a>
 
-        <a
+        {/* <a
           href={profile.leetcodeUrl}
           target="_blank"
           rel="noopener noreferrer"
@@ -66,7 +66,7 @@ export default function About({ githubData, leetCodeData }: AboutProps) {
         >
           <CodeIcon className="w-4 h-4" />
           LeetCode
-        </a>
+        </a> */}
 
         {profile.blog && <a
           href={profile.blog}
