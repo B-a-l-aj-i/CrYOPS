@@ -8,6 +8,7 @@ import {
   getActivelyMaintainedRepos,
   validateContributionsData,
   validateReposData,
+  validatePinnedReposData,
 } from "@/lib/github/helpers";
 import {
   type SanitizedRepo,
@@ -203,11 +204,9 @@ export async function POST(request: NextRequest) {
     const rawReposData = await reposResponse.json();
     const reposData = validateReposData(rawReposData);
 
-    // Get pinned data
+    // Get pinned data and validate
     const rawPinnedData = await pinnedResponse.json();
-    const pinnedData = Array.isArray(rawPinnedData)
-      ? (rawPinnedData as SanitizedRepo[])
-      : [];
+    const pinnedData = validatePinnedReposData(rawPinnedData);
 
     // Handle contributions API response
     const rawContributionsData = await contributionsResponse.json();

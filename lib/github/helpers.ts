@@ -7,6 +7,7 @@ import {
   type GitHubPRsResponse,
   type SanitizedRepo,
   type ContributionDetails,
+  type PinnedRepo,
 } from "@/lib/github/types";
 import {
   getLanguageColor,
@@ -155,11 +156,43 @@ export function extractUsernameFromUrl(url: string): string | null {
 
 
 /**
+ * Validate and map pinned repos data to minimal structure
+ * Only extracts the 'name' field which is all we need for matching
+ */
+export function validatePinnedReposData(
+  pinnedData: unknown
+): PinnedRepo[] {
+  if (!Array.isArray(pinnedData)) {
+    console.warn("Pinned repos data is not an array, using empty array");
+    return [];
+  }
+
+  return pinnedData
+    .map((item) => {
+      // Validate that item is an object with a name property
+      if (!item || typeof item !== "object") {
+        return null;
+      }
+
+      const pinned = item as Record<string, unknown>;
+      const name = pinned.name;
+
+      // Only include items with a valid name string
+      if (typeof name === "string" && name.trim().length > 0) {
+        return { name: name.trim() };
+      }
+
+      return null;
+    })
+    .filter((item): item is PinnedRepo => item !== null);
+}
+
+/**
  * Sanitize and transform GitHub API repository data to SanitizedRepo format
  */
 export function sanitizeReposData(
   reposData: GitHubRepoResponse[],
-  pinnedData: SanitizedRepo[]
+  pinnedData: PinnedRepo[]
 ): SanitizedRepo[] {
   return reposData.map((repo) => {
     const activityDuration = calculateActivityDuration(

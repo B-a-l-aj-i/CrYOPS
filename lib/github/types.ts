@@ -124,3 +124,10 @@ export interface GitHubPRsResponse {
   total_count: number;
   items?: Array<{ state: string }>;
 }
+
+/**
+ * Minimal pinned repo structure - only name is needed for matching
+ */
+export interface PinnedRepo {
+  name: string;
+}
