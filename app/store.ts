@@ -1,4 +1,10 @@
 import { create } from "zustand";
+import {
+  type SanitizedRepo,
+  type ContributionDetails,
+  type GitHubProfile,
+  type LanguageDistribution,
+} from "@/lib/github/types";
 
 interface LeetCodeStore {
   leetCodeUrl: string;
@@ -62,35 +68,13 @@ export interface LeetCodeData {
 }
 
 export interface GitHubData {
-  profile: {
-    username: string;
-    name: string;
-    bio: string;
-    avatar: string;
-    followers: number;
-    publicRepos: number;
-    profileUrl: string;
-    location?: string;
-    blog?: string;
-  };
+  profile: GitHubProfile;
   profileUrl: string;
-  contributions: {
-    total: number;
-    currentStreak: number;
-    longestStreak: number;
-    activeYears: string[];
-  };
-  contributionCalendar: {
-    contributions: Array<{ date: string; count: number; level?: number }>;
-  };
-  repos: Array<{
-    name: string;
-    description: string | null;
-    language: string | null;
-    stargazers_count: number;
-    forks_count?: number;
-    html_url: string;
-  }>;
-  totalStars?: number;
-  totalCommits?: number;
+  contributions: ContributionDetails;
+  sanitizedReposData: SanitizedRepo[];
+  languageDistribution: LanguageDistribution[];
+  totalStars: number;
+  bestRepo: SanitizedRepo | null;
+  mostActiveRepoThisMonth: SanitizedRepo | null;
+  activelyMaintainedRepos: SanitizedRepo[];
 }
