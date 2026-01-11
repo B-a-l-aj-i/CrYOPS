@@ -120,13 +120,18 @@ export async function POST(request: NextRequest) {
 
     // Handle contributions API response
     const contributionsData = await contributionsResponse.json();
-    
 
-    // Get all contribution details
-    const contributions = await getContributionDetails(
+    // issues data
+   const issuesData = await issuesResponse.json();
+
+   // prs data
+   const prsData = await prsResponse.json();
+
+    // Get all contribution details (now accepts parsed data)
+    const contributions = getContributionDetails(
       contributionsData,
-      issuesResponse,
-      prsResponse
+      issuesData,
+      prsData
     );
 
 

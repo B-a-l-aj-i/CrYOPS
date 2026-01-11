@@ -636,69 +636,62 @@ function filterContributionsByPeriod(
 }
 
 /**
- * Process issues and PRs API responses
+ * GitHub API issues/PRs response types
  */
-async function processIssuesAndPRs(
-  issuesResponse: Response,
-  prsResponse: Response
-): Promise<{
+interface GitHubIssuesResponse {
+  total_count: number;
+  items?: Array<{ state: string }>;
+}
+
+interface GitHubPRsResponse {
+  total_count: number;
+  items?: Array<{ state: string }>;
+}
+
+/**
+ * Process issues and PRs parsed data
+ */
+function processIssuesAndPRs(
+  issuesData: GitHubIssuesResponse | null,
+  prsData: GitHubPRsResponse | null
+): {
   issues: { total: number; closed: number };
   pullRequests: { total: number; closed: number };
-}> {
-  let issuesData = { total: 0, closed: 0 };
-  let pullRequestsData = { total: 0, closed: 0 };
+} {
+  const issues = issuesData
+    ? {
+        total: issuesData.total_count || 0,
+        closed:
+          issuesData.items?.filter((item) => item.state === "closed").length ||
+          0,
+      }
+    : { total: 0, closed: 0 };
 
-  if (issuesResponse.ok) {
-    try {
-      const issuesResponseData = await issuesResponse.json();
-      const closedIssuesCount =
-        issuesResponseData.items?.filter(
-          (item: { state: string }) => item.state === "closed"
-        ).length || 0;
-
-      issuesData = {
-        total: issuesResponseData.total_count || 0,
-        closed: closedIssuesCount,
-      };
-    } catch (error) {
-      console.error("Error parsing issues response:", error);
-    }
-  }
-
-  if (prsResponse.ok) {
-    try {
-      const prsResponseData = await prsResponse.json();
-      const closedPRsCount =
-        prsResponseData.items?.filter(
-          (item: { state: string }) => item.state === "closed"
-        ).length || 0;
-
-      pullRequestsData = {
-        total: prsResponseData.total_count || 0,
-        closed: closedPRsCount,
-      };
-    } catch (error) {
-      console.error("Error parsing PRs response:", error);
-    }
-  }
+  const pullRequests = prsData
+    ? {
+        total: prsData.total_count || 0,
+        closed:
+          prsData.items?.filter((item) => item.state === "closed").length || 0,
+      }
+    : { total: 0, closed: 0 };
 
   return {
-    issues: issuesData,
-    pullRequests: pullRequestsData,
+    issues,
+    pullRequests,
   };
 }
 
 /**
  * Get all contribution details including stats, streaks, metrics, and issues/PRs
  */
-export async function getContributionDetails(
+export function getContributionDetails(
   contributionsData: {
     contributions?: Array<{ date: string; count: number }>;
     total?: Record<string, number>;
   },
-  issuesResponse: Response,
-  prsResponse: Response
-): Promise<ContributionDetails> {
+  issuesData: GitHubIssuesResponse | null,
+  prsData: GitHubPRsResponse | null
+): ContributionDetails {
   const contributions = contributionsData?.contributions || [];
 
   // Basic stats
@@ -743,10 +736,7 @@ export async function getContributionDetails(
   const metricsOverall = calculatePeriodMetrics(contributions);
 
   // Process issues and PRs
-  const { issues, pullRequests } = await processIssuesAndPRs(
-    issuesResponse,
-    prsResponse
-  );
+  const { issues, pullRequests } = processIssuesAndPRs(issuesData, prsData);
 
   return {
     total,
