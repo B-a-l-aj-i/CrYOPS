@@ -2,7 +2,7 @@ export interface SanitizedRepo {
     "author": string,
     "name": string,
     "description": string,
-    "language": string,
+    "language": string | null | "",
     "languageColor": string,
     "stars": number,
     "forks": number,
@@ -41,12 +41,28 @@ export interface ContributionDetails {
 }
 
 /**
+ * GitHub API repository response type
+ */
+interface GitHubRepoResponse {
+    owner: { login: string };
+    name: string;
+    description: string | null;
+    language: string | null | "";
+    stargazers_count: number;
+    forks: number;
+    created_at: string;
+    updated_at: string;
+    pushed_at: string | null;
+}
+
+
+/**
  * Calculate language distribution with percentages and colors
  */
 export function calculateLanguageDistribution(
     repos: Array<SanitizedRepo>
 ): Array<{ language: string; percentage: number; color: string }> {
-    // Filter out repos with null language
+    // Filter out repos with null language or empty string
     const reposWithLanguage = repos.filter((repo) => repo.language !== null && repo.language !== "");
 
     // Count occurrences of each language
@@ -79,7 +95,9 @@ export function calculateLanguageDistribution(
 
     return languageDistribution;
 }
-
+/**
+ * Get language color from language name
+ */
 export function getLanguageColor(language: string | null): string {
     if (!language) return "#cccccc"; // Default gray for null/unknown languages
 
@@ -135,6 +153,9 @@ export function getLanguageColor(language: string | null): string {
     return languageColors[language] || "#cccccc";
 }
 
+/**
+ * Extract username from GitHub URL
+ */
 export function extractUsernameFromUrl(url: string): string | null {
     // Handle various GitHub URL formats:
     // - https://github.com/username
@@ -157,6 +178,9 @@ export function extractUsernameFromUrl(url: string): string | null {
     return null;
 }
 
+/**
+ * Format date with ordinal suffix
+ */
 export function formatDateWithOrdinal(dateString: string): string {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -210,21 +234,6 @@ function calculateActivityDuration(createdAt: string, updatedAt: string): string
 }
 
 /**
- * GitHub API repository response type
- */
-interface GitHubRepoResponse {
-    owner: { login: string };
-    name: string;
-    description: string | null;
-    language: string | null;
-    stargazers_count: number;
-    forks: number;
-    created_at: string;
-    updated_at: string;
-    pushed_at: string | null;
-}
-
-/**
  * Sanitize and transform GitHub API repository data to SanitizedRepo format
  */
 export function sanitizeReposData(
@@ -251,7 +260,9 @@ export function sanitizeReposData(
     });
 }
 
-// Calculate year-over-year % change (last 12 months vs previous 12 months)
+/**
+ * Calculate year-over-year % change (last 12 months vs previous 12 months)
+ */
 export const yearOverYearChangePercentage = ((contributions: { date: string; count: number }[]) => {
     const now = new Date();
     now.setHours(23, 59, 59, 999); // End of today
@@ -293,7 +304,9 @@ export const yearOverYearChangePercentage = ((contributions: { date: string; cou
     return Math.round(((last12MonthsTotal - prev12MonthsTotal) / prev12MonthsTotal) * 100);
 });
 
-// Calculate quarter-over-quarter % change (last 3 months vs previous 3 months)
+/**
+ * Calculate quarter-over-quarter % change (last 3 months vs previous 3 months)
+ */
 export const quarterOverQuarterChangePercentage = ((contributions: { date: string; count: number }[]) => {
     const now = new Date();
     now.setHours(23, 59, 59, 999); // End of today
@@ -335,7 +348,9 @@ export const quarterOverQuarterChangePercentage = ((contributions: { date: strin
     return Math.round(((last3MonthsTotal - prev3MonthsTotal) / prev3MonthsTotal) * 100);
 });
 
-// Calculate half-over-half % change (last 6 months vs previous 6 months)
+/**
+ * Calculate half-over-half % change (last 6 months vs previous 6 months)
+ */
 export const halfOverHalfChangePercentage = ((contributions: { date: string; count: number }[]) => {
     const now = new Date();
     now.setHours(23, 59, 59, 999); // End of today
@@ -378,7 +393,9 @@ export const halfOverHalfChangePercentage = ((contributions: { date: string; cou
 });
 
 
-  // Helper function to calculate metrics for a specific time period
+/**
+ * Calculate metrics for a specific time period
+ */
 export const calculatePeriodMetrics = (
     filteredContributions: Array<{ date: string; count: number }>
   ) => {
@@ -446,7 +463,7 @@ export const calculatePeriodMetrics = (
       },
       bestCommit,
     };
-  };
+};
 
 /**
  * Calculate current streak (consecutive days with contributions ending today)
