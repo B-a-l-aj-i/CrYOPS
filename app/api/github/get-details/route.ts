@@ -1,29 +1,20 @@
 import { NextRequest } from "next/server";
+import {
+  calculateLanguageDistribution,
+  extractUsernameFromUrl,
+  sanitizeReposData,
+  SanitizedRepo,
+  getContributionDetails,
+  getMostActiveRepoThisMonth,
+  getActivelyMaintainedRepos,
+} from "@/lib/github";
 
-const GITHUB_CONTRIBUTIONS_API = "https://github-contributions-api.jogruber.de/v4";
+const GITHUB_CONTRIBUTIONS_API =
+  "https://github-contributions-api.jogruber.de/v4";
 const GITHUB_API_BASE = "https://api.github.com";
-
-function extractUsernameFromUrl(url: string): string | null {
-  // Handle various GitHub URL formats:
-  // - https://github.com/username
-  // - https://github.com/username/
-  // - github.com/username
-  // - username
-  const patterns = [
-    /^https?:\/\/(?:www\.)?github\.com\/([^\/]+)\/?$/,
-    /^github\.com\/([^\/]+)\/?$/,
-    /^([a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38})$/,
-  ];
-
-  for (const pattern of patterns) {
-    const match = url.trim().match(pattern);
-    if (match && match[1]) {
-      return match[1];
-    }
-  }
-
-  return null;
-}
+const PINNED_API_BASE = "https://pinned.berrysauce.dev/get";
+const GITHUB_ISSUES_API = "https://api.github.com/search/issues?q=author:";
+const GITHUB_PR_TYPE = "type:pr";
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,7 +45,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch user details and contributions in parallel
-    const [userResponse, contributionsResponse, reposResponse] = await Promise.all([
+    const [
+      userResponse,
+      contributionsResponse,
+      reposResponse,
+      pinnedResponse,
+      issuesResponse,
+      prsResponse,
+    ] = await Promise.all([
       fetch(`${GITHUB_API_BASE}/users/${username}`, {
         headers: {
           Accept: "application/vnd.github.v3+json",
@@ -72,142 +70,90 @@ export async function POST(request: NextRequest) {
           "User-Agent": "Mozilla/5.0",
         },
       }),
+      fetch(`${PINNED_API_BASE}/${username}`, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+        },
+      }),
+      fetch(`${GITHUB_ISSUES_API}${username}`, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+        },
+      }),
+      fetch(`${GITHUB_ISSUES_API}${username}+${GITHUB_PR_TYPE}`, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+        },
+      }),
     ]);
 
     // Handle user API response
-    if (!userResponse.ok) {
-      if (userResponse.status === 404) {
-        return Response.json(
-          {
-            success: false,
-            error: "GitHub user not found",
-          },
-          { status: 404 }
-        );
-      }
+    if (!userResponse.ok || !contributionsResponse.ok 
+      || !reposResponse.ok || !pinnedResponse.ok 
+      || !issuesResponse.ok || !prsResponse.ok 
+      || userResponse.status === 404 || contributionsResponse.status === 404 
+      || reposResponse.status === 404 || pinnedResponse.status === 404 
+      || issuesResponse.status === 404 || prsResponse.status === 404 ) {
       return Response.json(
         {
           success: false,
-          error: "Failed to fetch GitHub user data",
+          error: "Failed to fetch GitHub data",
         },
-        { status: userResponse.status }
+        { status: userResponse.status || 
+          contributionsResponse.status || 
+          reposResponse.status || 
+          pinnedResponse.status || 
+          issuesResponse.status || 
+          prsResponse.status || 
+          404 }
       );
     }
 
+    // Get user data
     const userData = await userResponse.json();
-
-    // Handle contributions API response
-    let contributionsData = null;
-    if (contributionsResponse.ok) {
-      contributionsData = await contributionsResponse.json();
-    }
-
-    // Calculate statistics from contributions
-    const contributions = contributionsData?.contributions || [];
-    const totalContributions = contributions.reduce(
-      (sum: number, contrib: { count: number }) => sum + contrib.count,
-      0
-    );
-
-    // Get current year contributions
-    const currentYear = new Date().getFullYear();
-    const currentYearContributions = contributions.filter(
-      (contrib: { date: string }) => contrib.date.startsWith(currentYear.toString())
-    );
-    const currentYearTotal = currentYearContributions.reduce(
-      (sum: number, contrib: { count: number }) => sum + contrib.count,
-      0
-    );
-
-    // Calculate current streak (consecutive days with contributions ending today)
-    let currentStreak = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    // Create a map of dates to contribution counts for easier lookup
-    const contribMap = new Map<string, number>();
-    contributions.forEach((contrib: { date: string; count: number }) => {
-      contribMap.set(contrib.date, contrib.count);
-    });
-
-    // Check backwards from today
-    const checkDate = new Date(today);
-    while (true) {
-      const dateStr = checkDate.toISOString().split("T")[0];
-      const count = contribMap.get(dateStr) || 0;
-
-      if (count > 0) {
-        currentStreak++;
-        checkDate.setDate(checkDate.getDate() - 1);
-      } else {
-        // If today has no contributions, check yesterday
-        if (checkDate.getTime() === today.getTime()) {
-          checkDate.setDate(checkDate.getDate() - 1);
-          continue;
-        }
-        // Otherwise, streak is broken
-        break;
-      }
-
-      // Safety check to prevent infinite loop
-      if (currentStreak > 1000) break;
-    }
-
-    // Calculate longest streak (accounting for date gaps)
-    // Sort contributions by date (oldest first) for streak calculation
-    const sortedContribs = [...contributions].sort((a, b) => {
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
-
-    let longestStreak = 0;
-    let tempStreak = 0;
-    let lastDate: Date | null = null;
-
-    for (const contrib of sortedContribs) {
-      const contribDate = new Date(contrib.date);
-      contribDate.setHours(0, 0, 0, 0);
-
-      if (contrib.count > 0) {
-        if (lastDate) {
-          const daysDiff = Math.floor(
-            (contribDate.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
-          );
-          // If there's a gap of more than 1 day, streak is broken
-          if (daysDiff > 1) {
-            tempStreak = 1;
-          } else {
-            tempStreak++;
-          }
-        } else {
-          tempStreak = 1;
-        }
-        longestStreak = Math.max(longestStreak, tempStreak);
-        lastDate = contribDate;
-      } else {
-        // Reset streak if we encounter a day with no contributions
-        tempStreak = 0;
-        lastDate = null;
-      }
-    }
-
-    // Get active years from contributions data
-    const activeYears = contributionsData?.total
-      ? Object.keys(contributionsData.total)
-          .filter((year) => year !== "lastYear" && !isNaN(Number(year)))
-          .map(Number)
-          .sort()
-      : [];
-
-    // Get recent contributions (last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentContributions = contributions.filter((contrib: { date: string }) => {
-      const contribDate = new Date(contrib.date);
-      return contribDate >= thirtyDaysAgo;
-    });
 
     // Get repos data
     const reposData = await reposResponse.json();
+
+    // Get pinned data
+    const pinnedData = await pinnedResponse.json();
+
+    // Handle contributions API response
+    const contributionsData = await contributionsResponse.json();
+    
+
+    // Get all contribution details
+    const contributions = await getContributionDetails(
+      contributionsData,
+      issuesResponse,
+      prsResponse
+    );
+
+
+    // Sanitize and transform repos data
+    const sanitizedReposData = sanitizeReposData(reposData, pinnedData);
+
+    const languageDistribution =
+      calculateLanguageDistribution(sanitizedReposData);
+
+    const totalStars = sanitizedReposData.reduce(
+      (acc: number, repo: SanitizedRepo) => acc + repo.stars,
+      0
+    );
+
+    const bestRepo = sanitizedReposData
+      .sort((a: SanitizedRepo, b: SanitizedRepo) => b.stars - a.stars)
+      .slice(0, 1);
+
+    // Calculate most active repo this month
+    const mostActiveRepoThisMonth = getMostActiveRepoThisMonth(
+      sanitizedReposData
+    );
+
+    // Calculate actively maintained repos (repos with commits in last 6 months)
+    const activelyMaintainedRepos = getActivelyMaintainedRepos(
+      sanitizedReposData
+    );
 
     // Structure response for UI
     return Response.json({
@@ -232,23 +178,20 @@ export async function POST(request: NextRequest) {
         },
 
         // Contribution statistics
-        contributions: {
-          total: totalContributions,
-          currentYear: currentYearTotal,
-          currentStreak: currentStreak,
-          longestStreak: longestStreak,
-          activeYears: activeYears.map((year) => year.toString()),
-          recentContributions: recentContributions.length,
-        },
+        contributions,
 
-        // Full contribution data
-        contributionCalendar: {
-          total: contributionsData?.total || {},
-          contributions: contributions,
-        },
-        repos: reposData,
+        bestRepo,
 
-        // Additional data
+        sanitizedReposData,
+
+        languageDistribution,
+
+        totalStars,
+
+        mostActiveRepoThisMonth,
+
+        activelyMaintainedRepos: activelyMaintainedRepos,
+
         profileUrl: url,
       },
     });
@@ -263,4 +206,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-
