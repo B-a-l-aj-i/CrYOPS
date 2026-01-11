@@ -3,11 +3,18 @@ import {
   calculateLanguageDistribution,
   extractUsernameFromUrl,
   sanitizeReposData,
-  SanitizedRepo,
   getContributionDetails,
   getMostActiveRepoThisMonth,
   getActivelyMaintainedRepos,
-} from "@/lib/github";
+  validateContributionsData,
+  validateReposData,
+} from "@/lib/github/helpers";
+import {
+  type SanitizedRepo,
+  type GitHubIssuesResponse,
+} from "@/lib/github/types";
+import { validateUserData } from "@/lib/github/helpers";
+
 
 const GITHUB_CONTRIBUTIONS_API =
   "https://github-contributions-api.jogruber.de/v4";
@@ -38,7 +45,8 @@ export async function POST(request: NextRequest) {
       return Response.json(
         {
           success: false,
-          error: "Invalid GitHub URL format",
+          error:
+            "Invalid GitHub URL format. Please provide a valid GitHub profile URL.",
         },
         { status: 400 }
       );
@@ -88,44 +96,69 @@ export async function POST(request: NextRequest) {
     ]);
 
     // Handle user API response
-    if (!userResponse.ok || !contributionsResponse.ok 
-      || !reposResponse.ok || !pinnedResponse.ok 
-      || !issuesResponse.ok || !prsResponse.ok 
-      || userResponse.status === 404 || contributionsResponse.status === 404 
-      || reposResponse.status === 404 || pinnedResponse.status === 404 
-      || issuesResponse.status === 404 || prsResponse.status === 404 ) {
+    if (
+      !userResponse.ok ||
+      !contributionsResponse.ok ||
+      !reposResponse.ok ||
+      !pinnedResponse.ok ||
+      !issuesResponse.ok ||
+      !prsResponse.ok ||
+      userResponse.status === 404 ||
+      contributionsResponse.status === 404 ||
+      reposResponse.status === 404 ||
+      pinnedResponse.status === 404 ||
+      issuesResponse.status === 404 ||
+      prsResponse.status === 404
+    ) {
       return Response.json(
         {
           success: false,
           error: "Failed to fetch GitHub data",
         },
-        { status: userResponse.status || 
-          contributionsResponse.status || 
-          reposResponse.status || 
-          pinnedResponse.status || 
-          issuesResponse.status || 
-          prsResponse.status || 
-          404 }
+        {
+          status:
+            userResponse.status ||
+            contributionsResponse.status ||
+            reposResponse.status ||
+            pinnedResponse.status ||
+            issuesResponse.status ||
+            prsResponse.status ||
+            404,
+        }
       );
     }
 
     // Get user data
-    const userData = await userResponse.json();
+    const rawUserData = await userResponse.json();
+    const userData = validateUserData(rawUserData);
 
     // Get repos data
-    const reposData = await reposResponse.json();
+    const rawReposData = await reposResponse.json();
+    const reposData = validateReposData(rawReposData);
 
     // Get pinned data
-    const pinnedData = await pinnedResponse.json();
+    const rawPinnedData = await pinnedResponse.json();
+    const pinnedData = Array.isArray(rawPinnedData)
+      ? (rawPinnedData as SanitizedRepo[])
+      : [];
 
     // Handle contributions API response
-    const contributionsData = await contributionsResponse.json();
+    const rawContributionsData = await contributionsResponse.json();
+    const contributionsData = validateContributionsData(rawContributionsData);
 
     // issues data
-   const issuesData = await issuesResponse.json();
+    const rawIssuesData = await issuesResponse.json();
+    const issuesData =
+      rawIssuesData && typeof rawIssuesData === "object"
+        ? (rawIssuesData as GitHubIssuesResponse)
+        : null;
 
-   // prs data
-   const prsData = await prsResponse.json();
+    // prs data
+    const rawPrsData = await prsResponse.json();
+    const prsData =
+      rawPrsData && typeof rawPrsData === "object"
+        ? (rawPrsData as GitHubIssuesResponse)
+        : null;
 
     // Get all contribution details (now accepts parsed data)
     const contributions = getContributionDetails(
@@ -133,7 +166,6 @@ export async function POST(request: NextRequest) {
       issuesData,
       prsData
     );
-
 
     // Sanitize and transform repos data
     const sanitizedReposData = sanitizeReposData(reposData, pinnedData);
@@ -146,19 +178,20 @@ export async function POST(request: NextRequest) {
       0
     );
 
-    const bestRepo = sanitizedReposData
-      .sort((a: SanitizedRepo, b: SanitizedRepo) => b.stars - a.stars)
-      .slice(0, 1);
+    const bestRepo =
+      sanitizedReposData.length > 0
+        ? sanitizedReposData.sort(
+            (a: SanitizedRepo, b: SanitizedRepo) => b.stars - a.stars
+          )[0]
+        : null;
 
     // Calculate most active repo this month
-    const mostActiveRepoThisMonth = getMostActiveRepoThisMonth(
-      sanitizedReposData
-    );
+    const mostActiveRepoThisMonth =
+      getMostActiveRepoThisMonth(sanitizedReposData);
 
     // Calculate actively maintained repos (repos with commits in last 6 months)
-    const activelyMaintainedRepos = getActivelyMaintainedRepos(
-      sanitizedReposData
-    );
+    const activelyMaintainedRepos =
+      getActivelyMaintainedRepos(sanitizedReposData);
 
     // Structure response for UI
     return Response.json({
