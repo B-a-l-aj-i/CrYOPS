@@ -180,7 +180,7 @@ export async function POST(request: NextRequest) {
 
     const bestRepo =
       sanitizedReposData.length > 0
-        ? sanitizedReposData.sort(
+        ? [...sanitizedReposData].sort(
             (a: SanitizedRepo, b: SanitizedRepo) => b.stars - a.stars
           )[0]
         : null;
