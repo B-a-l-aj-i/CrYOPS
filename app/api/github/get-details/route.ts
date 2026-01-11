@@ -24,6 +24,7 @@ const GITHUB_ISSUES_API = "https://api.github.com/search/issues?q=author:";
 const GITHUB_PR_TYPE = "type:pr";
 
 export async function POST(request: NextRequest) {
+  let username: string | null = null;
   try {
     const body = await request.json();
     const { url } = body;
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract username from URL
-    const username = extractUsernameFromUrl(url);
+    username = extractUsernameFromUrl(url);
 
     if (!username) {
       return Response.json(
@@ -95,35 +96,101 @@ export async function POST(request: NextRequest) {
       }),
     ]);
 
-    // Handle user API response
-    if (
-      !userResponse.ok ||
-      !contributionsResponse.ok ||
-      !reposResponse.ok ||
-      !pinnedResponse.ok ||
-      !issuesResponse.ok ||
-      !prsResponse.ok ||
-      userResponse.status === 404 ||
-      contributionsResponse.status === 404 ||
-      reposResponse.status === 404 ||
-      pinnedResponse.status === 404 ||
-      issuesResponse.status === 404 ||
-      prsResponse.status === 404
-    ) {
+    // Handle user API response - log failures for troubleshooting
+    const failures: Array<{ api: string; status: number; statusText: string }> = [];
+
+    if (!userResponse.ok) {
+      failures.push({
+        api: "GitHub User API",
+        status: userResponse.status,
+        statusText: userResponse.statusText,
+      });
+      console.error(
+        `[GitHub API] User API failed for ${username}:`,
+        userResponse.status,
+        userResponse.statusText
+      );
+    }
+
+    if (!contributionsResponse.ok) {
+      failures.push({
+        api: "Contributions API",
+        status: contributionsResponse.status,
+        statusText: contributionsResponse.statusText,
+      });
+      console.error(
+        `[GitHub API] Contributions API failed for ${username}:`,
+        contributionsResponse.status,
+        contributionsResponse.statusText
+      );
+    }
+
+    if (!reposResponse.ok) {
+      failures.push({
+        api: "GitHub Repos API",
+        status: reposResponse.status,
+        statusText: reposResponse.statusText,
+      });
+      console.error(
+        `[GitHub API] Repos API failed for ${username}:`,
+        reposResponse.status,
+        reposResponse.statusText
+      );
+    }
+
+    if (!pinnedResponse.ok) {
+      failures.push({
+        api: "Pinned Repos API",
+        status: pinnedResponse.status,
+        statusText: pinnedResponse.statusText,
+      });
+      console.error(
+        `[GitHub API] Pinned Repos API failed for ${username}:`,
+        pinnedResponse.status,
+        pinnedResponse.statusText
+      );
+    }
+
+    if (!issuesResponse.ok) {
+      failures.push({
+        api: "GitHub Issues API",
+        status: issuesResponse.status,
+        statusText: issuesResponse.statusText,
+      });
+      console.error(
+        `[GitHub API] Issues API failed for ${username}:`,
+        issuesResponse.status,
+        issuesResponse.statusText
+      );
+    }
+
+    if (!prsResponse.ok) {
+      failures.push({
+        api: "GitHub PRs API",
+        status: prsResponse.status,
+        statusText: prsResponse.statusText,
+      });
+      console.error(
+        `[GitHub API] PRs API failed for ${username}:`,
+        prsResponse.status,
+        prsResponse.statusText
+      );
+    }
+
+    // If any API failed, return error with details
+    if (failures.length > 0) {
+      console.error(
+        `[GitHub API] Multiple API failures for ${username}:`,
+        failures.map((f) => `${f.api}: ${f.status} ${f.statusText}`).join(", ")
+      );
+
       return Response.json(
         {
           success: false,
-          error: "Failed to fetch GitHub data",
+          error: "failed to fetch GitHub data",
         },
         {
-          status:
-            userResponse.status ||
-            contributionsResponse.status ||
-            reposResponse.status ||
-            pinnedResponse.status ||
-            issuesResponse.status ||
-            prsResponse.status ||
-            404,
+          status: 500,
         }
       );
     }
@@ -234,7 +301,16 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching GitHub details:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : String(error);
+    console.error(
+      `[GitHub API] Internal server error while fetching data for ${username || "unknown user"}:`,
+      {
+        error: errorMessage,
+        timestamp: new Date().toISOString(),
+      }
+    );
+
     return Response.json(
       {
         success: false,
