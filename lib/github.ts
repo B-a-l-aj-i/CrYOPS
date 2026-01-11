@@ -47,7 +47,7 @@ export function calculateLanguageDistribution(
     repos: Array<SanitizedRepo>
 ): Array<{ language: string; percentage: number; color: string }> {
     // Filter out repos with null language
-    const reposWithLanguage = repos.filter((repo) => repo.language !== null);
+    const reposWithLanguage = repos.filter((repo) => repo.language !== null && repo.language !== "");
 
     // Count occurrences of each language
     const languageCounts = reposWithLanguage.reduce(
