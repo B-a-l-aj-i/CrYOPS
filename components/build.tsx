@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PaintRollerIcon } from "lucide-react";
 import { Button } from "./ui/button";
-import { useGithubStore, useLeetCodeStore } from "@/app/store";
+import { useGithubStore /* , useLeetCodeStore */ } from "@/app/store";
 import { useRouter } from "next/navigation";
 
 export function Build() {
@@ -16,14 +16,14 @@ export function Build() {
     setError(null);
 
     // Get URLs from store
-    const leetCodeUrl = useLeetCodeStore.getState().leetCodeUrl;
+    // const leetCodeUrl = useLeetCodeStore.getState().leetCodeUrl;
     const githubUrl = useGithubStore.getState().githubUrl;
 
     // Validate URLs
-    if (!leetCodeUrl || !leetCodeUrl.trim()) {
-      setError("Please provide a LeetCode URL");
-      return;
-    }
+    // if (!leetCodeUrl || !leetCodeUrl.trim()) {
+    //   setError("Please provide a LeetCode URL");
+    //   return;
+    // }
 
     if (!githubUrl || !githubUrl.trim()) {
       setError("Please provide a GitHub URL");
@@ -35,26 +35,27 @@ export function Build() {
     
     try {
 
-      const [leetCodeResponse, githubResponse] = await Promise.all([
-        fetch(`/api/leetcode/get-details`, {
-          method: "POST",
-          body: JSON.stringify({
-            url: leetCodeUrl,
-          }),
+      // const [leetCodeResponse, githubResponse] = await Promise.all([
+      //   fetch(`/api/leetcode/get-details`, {
+      //     method: "POST",
+      //     body: JSON.stringify({
+      //       url: leetCodeUrl,
+      //     }),
+      //   }),
+      const githubResponse = await fetch(`/api/github/get-details`, {
+        method: "POST",
+        body: JSON.stringify({
+          url: githubUrl,
         }),
-        fetch(`/api/github/get-details`, {
-          method: "POST",
-          body: JSON.stringify({
-            url: githubUrl,
-          }),
-        }),
-      ]);
+      });
+      // ]);
 
-      const leetCodeData = await leetCodeResponse.json();
+      // const leetCodeData = await leetCodeResponse.json();
       const githubData = await githubResponse.json();
 
-      if (leetCodeResponse.ok && githubResponse.ok) {
-        useLeetCodeStore.setState({ leetCodeData: leetCodeData.data });
+      // if (leetCodeResponse.ok && githubResponse.ok) {
+      if (githubResponse.ok) {
+        // useLeetCodeStore.setState({ leetCodeData: leetCodeData.data });
         useGithubStore.setState({ githubData: githubData.data });
 
         router.push(`/editYOPS`);
