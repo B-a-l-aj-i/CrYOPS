@@ -1,17 +1,16 @@
-'use client'
+"use client";
 
 import { useState } from "react";
 import { PaintRollerIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useGithubStore /* , useLeetCodeStore */ } from "@/app/store";
-import { useRouter } from "next/navigation";
+import { useGetGithubDetails } from "@/hooks/QueryHooks/useGetGithubDetails";
 
 export function Build() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const getGithubDetailsMutation = useGetGithubDetails();
 
-  const handleBuild = async () => {
+  const handleBuild = () => {
     // Reset error
     setError(null);
 
@@ -31,57 +30,37 @@ export function Build() {
     }
 
     // If validation passes, proceed
-    setIsLoading(true);
-    
-    try {
-
-      // const [leetCodeResponse, githubResponse] = await Promise.all([
-      //   fetch(`/api/leetcode/get-details`, {
-      //     method: "POST",
-      //     body: JSON.stringify({
-      //       url: leetCodeUrl,
-      //     }),
-      //   }),
-      const githubResponse = await fetch(`/api/github/get-details`, {
-        method: "POST",
-        body: JSON.stringify({
-          url: githubUrl,
-        }),
-      });
-      // ]);
-
-      // const leetCodeData = await leetCodeResponse.json();
-      const githubData = await githubResponse.json();
-
-      // if (leetCodeResponse.ok && githubResponse.ok) {
-      if (githubResponse.ok) {
-        // useLeetCodeStore.setState({ leetCodeData: leetCodeData.data });
-        useGithubStore.setState({ githubData: githubData.data });
-
-        router.push(`/editYOPS`);
-
-      } else {
-        setError("Failed to fetch data. Please check your URLs and try again.");
+    getGithubDetailsMutation.mutate(
+      { url: githubUrl },
+      {
+        onError: (err) => {
+          setError(
+            "Failed to fetch data. Please check your URLs and try again."
+          );
+          console.error(err);
+        },
       }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
+
+  const isLoading = getGithubDetailsMutation.isPending;
+  const displayError =
+    error ||
+    (getGithubDetailsMutation.error
+      ? "An error occurred. Please try again."
+      : null);
 
   return (
     <div className="flex flex-col items-end gap-4 pt-6">
-      {error && (
+      {displayError && (
         <div className="w-full max-w-md p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
-          {error}
+          {displayError}
         </div>
       )}
       <div className="flex justify-end gap-4">
         <Button variant="outline">Save Draft</Button>
-        <Button 
-          className="cursor-pointer" 
+        <Button
+          className="cursor-pointer"
           onClick={handleBuild}
           disabled={isLoading}
         >
