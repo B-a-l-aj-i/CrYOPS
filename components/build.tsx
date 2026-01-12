@@ -3,12 +3,18 @@
 import { useState } from "react";
 import { PaintRollerIcon } from "lucide-react";
 import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
 import { useGithubStore /* , useLeetCodeStore */ } from "@/app/store";
 import { useGetGithubDetails } from "@/hooks/QueryHooks/useGetGithubDetails";
 
 export function Build() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const getGithubDetailsMutation = useGetGithubDetails();
+  const getGithubDetailsMutation = useGetGithubDetails({
+    onSuccess: () => {
+      router.push(`/editYOPS`);
+    },
+  });
 
   const handleBuild = () => {
     // Reset error
