@@ -74,10 +74,20 @@ export const postSuccessApi = async <T = unknown>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  if (!response.ok) {
+    // Try to parse error response, but don't fail if it's not JSON
+    try {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Request failed: ${response.status}`);
+    } catch {
+      throw new Error(`Request failed: ${response.status}`);
+    }
+  }
+
   const data = await response.json();
 
-  if (!response.ok || !data.success) {
-    throw new Error(data.error || `Request failed: ${response.status}`);
+  if (!data.success) {
+    throw new Error(data.error || "Request succeeded but operation failed.");
   }
 
   return data;

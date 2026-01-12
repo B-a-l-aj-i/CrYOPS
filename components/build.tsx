@@ -53,7 +53,7 @@ export function Build() {
   const displayError =
     error ||
     (getGithubDetailsMutation.error
-      ? "An error occurred. Please try again."
+      ? getGithubDetailsMutation.error.message
       : null);
 
   return (
