@@ -1,19 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Github, Loader2, Check, X } from "lucide-react";
 import { InputField } from "@/components/input-field";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAutoFillGitHubUrl } from "@/hooks/useAutoFillGitUrl";
 import { useValidateGithub } from "@/hooks/QueryHooks/useValidateGithub";
+import { useSession } from "next-auth/react";
 
 export function GitHub() {
-  const autoFilledUrl = useAutoFillGitHubUrl();
+  const { data: session } = useSession();
+
   const [githubProfile, setGithubProfile] = useState<string>(
-    autoFilledUrl || ""
+    session?.user?.githubProfileUrl || ""
   );
+
   const validateGithubMutation = useValidateGithub();
+
+  useEffect(() => {
+    const url = session?.user?.githubProfileUrl;
+
+    if (!url) return;
+
+    setTimeout(() => {
+      setGithubProfile(url);
+    }, 0);
+  }, [session?.user?.githubProfileUrl]);
 
   const handleValidateGithub = () => {
     if (!githubProfile.trim()) return;
