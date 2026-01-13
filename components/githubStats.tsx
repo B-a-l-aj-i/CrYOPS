@@ -406,9 +406,9 @@ export function GitHubStats({ data }: GitHubStatsProps) {
           </div>
 
           {sanitizedReposData.length > 0 &&
-            sanitizedReposData.map(
+            sanitizedReposData.slice(0, 6).sort((a, b) => b.stars - a.stars).map(
               (repo, index) =>
-                repo.isPinned && (
+                // repo.isPinned && (
                   <Card key={index} className="bg-slate-50">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">
@@ -452,7 +452,7 @@ export function GitHubStats({ data }: GitHubStatsProps) {
                       </div>
                     </CardContent>
                   </Card>
-                )
+                // )
             )}
         </div>
       </div>
