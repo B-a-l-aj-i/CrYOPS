@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import About from "@/components/about";
 import { LeetCodeData, GitHubData } from "../store";
 import { Card, CardContent } from "@/components/ui/card";
+import { DeployButton } from "@/components/deploy-button";
 
 
 export default function EditYOPS() {
@@ -36,6 +37,9 @@ export default function EditYOPS() {
   return (
     <div>
       <About githubData={githubData} /* leetCodeData={leetCodeData} */ />
+      <div className="container mx-auto max-w-4xl px-6 py-8">
+        <DeployButton />
+      </div>
     </div>
   );
 }
