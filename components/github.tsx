@@ -11,9 +11,7 @@ import { useSession } from "next-auth/react";
 export function GitHub() {
   const { data: session } = useSession();
 
-  const [githubProfile, setGithubProfile] = useState<string>(
-    session?.user?.githubProfileUrl || ""
-  );
+  const [githubProfile, setGithubProfile] = useState<string>("");
 
   const validateGithubMutation = useValidateGithub();
 
