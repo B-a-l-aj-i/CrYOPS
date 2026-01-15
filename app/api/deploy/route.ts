@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate repository name
-    const repoName = `CrYOPS-${username}-1`;
+    const repoName = `CrYOPS-${username}`;
 
     // Check if repo already exists
     const exists = await repoExists(session.accessToken, username, repoName);
