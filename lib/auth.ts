@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
+import Netlify from "next-auth/providers/netlify"
 
 interface GitHubProfile {
   login?: string
@@ -26,10 +27,16 @@ declare module "next-auth" {
 // JWT token type extension is handled via the token parameter in callbacks
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  debug: true,
+  trustHost: true,
   session: { 
     strategy: "jwt"  // stateless JWT in secure cookies, no DB needed
   },
   providers: [
+    Netlify({
+      clientId:process.env.NETLIFY_ID!,
+      clientSecret:process.env.NETLIFY_SECRET!,
+    }),
     GitHub({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
@@ -56,6 +63,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (account.access_token) {
           tokenWithGithub.accessToken = account.access_token
         }
+      }
+      if (account?.provider === "netlify" && account.access_token) {
+        const tokenWithNetlify = token as typeof token & {
+          accessToken?: string
+        }
+        tokenWithNetlify.accessToken = account.access_token
       }
       return token
     },
