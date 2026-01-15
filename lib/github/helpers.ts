@@ -194,7 +194,7 @@ export function extractUsernameFromUrl(url: string): string | null {
 export function sanitizeReposData(
   reposData: GitHubRepoResponse[],
   // pinnedData: PinnedRepo[]
-  pinnedData: any[] // Using any[] since we're commenting out pinned functionality
+  // pinnedData: any[] // Using any[] since we're commenting out pinned functionality
 ): SanitizedRepo[] {
   return reposData.map((repo) => {
     const activityDuration = calculateActivityDuration(
