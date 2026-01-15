@@ -23,6 +23,7 @@ export function GitHubStats({ data }: GitHubStatsProps) {
     totalStars,
     bestRepo,
     sanitizedReposData,
+    topActivelyUsedRepos,
   } = data;
 
   return (
@@ -405,55 +406,53 @@ export function GitHubStats({ data }: GitHubStatsProps) {
             </Card>
           </div>
 
-          {sanitizedReposData.length > 0 &&
-            sanitizedReposData.map(
-              (repo, index) =>
-                repo.isPinned && (
-                  <Card key={index} className="bg-slate-50">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <a
-                              href={
-                                "https://github.com/" +
-                                repo.author +
-                                "/" +
-                                repo.name
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <h3 className="font-semibold text-slate-800">
-                                {repo.author}/{repo.name}
-                              </h3>
-                            </a>
-                          </div>
-                          <p className="text-sm text-slate-600 mb-3">
-                            {repo.description || "No description"}
-                          </p>
-                          <div className="flex items-center gap-4 text-xs text-slate-600">
-                            <div className="flex items-center gap-1">
-                              <div
-                                className="w-2 h-2 rounded-full"
-                                style={{ backgroundColor: repo.languageColor }}
-                              />
-                              <span>{repo.language || "N/A"}</span>
-                            </div>
-                            <span>{repo.stars} ⭐</span>
-                            <span>{repo.activityDuration}</span>
-                          </div>
-                        </div>
-                        {repo.isPinned && (
-                          <div className="bg-amber-200 text-amber-800 text-xs px-2 py-1 rounded">
-                            Pinned
-                          </div>
-                        )}
+          {/* Top 6 Actively Used Repos */}
+          <div className="space-y-3">
+            <h3 className="text-lg font-semibold text-slate-800">Active Repos</h3>
+            {topActivelyUsedRepos.map((repo, index) => (
+              <Card key={index} className="bg-slate-50">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <a
+                          href={
+                            "https://github.com/" +
+                            repo.author +
+                            "/" +
+                            repo.name
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <h3 className="font-semibold text-slate-800">
+                            {repo.author}/{repo.name}
+                          </h3>
+                        </a>
                       </div>
-                    </CardContent>
-                  </Card>
-                )
-            )}
+                      <p className="text-sm text-slate-600 mb-3 line-clamp-1">
+                        {repo.description || "No description"}
+                      </p>
+                      <div className="flex items-center gap-4 text-xs text-slate-600">
+                        <div className="flex items-center gap-1">
+                          <div
+                            className="w-2 h-2 rounded-full"
+                            style={{ backgroundColor: repo.languageColor }}
+                          />
+                          <span>{repo.language || "N/A"}</span>
+                        </div>
+                        <span>{repo.stars} ⭐</span>
+                        <span>{repo.activityDuration}</span>
+                      </div>
+                    </div>
+                    <div className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
+                      #{index + 1}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </div>
     </div>

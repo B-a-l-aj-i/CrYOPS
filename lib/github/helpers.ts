@@ -160,40 +160,41 @@ export function extractUsernameFromUrl(url: string): string | null {
  * Validate and map pinned repos data to minimal structure
  * Only extracts the 'name' field which is all we need for matching
  */
-export function validatePinnedReposData(
-  pinnedData: unknown
-): PinnedRepo[] {
-  if (!Array.isArray(pinnedData)) {
-    console.warn("Pinned repos data is not an array, using empty array");
-    return [];
-  }
+// export function validatePinnedReposData(
+//   pinnedData: unknown
+// ): PinnedRepo[] {
+//   if (!Array.isArray(pinnedData)) {
+//     console.warn("Pinned repos data is not an array, using empty array");
+//     return [];
+//   }
 
-  return pinnedData
-    .map((item) => {
-      // Validate that item is an object with a name property
-      if (!item || typeof item !== "object") {
-        return null;
-      }
+//   return pinnedData
+//     .map((item) => {
+//       // Validate that item is an object with a name property
+//       if (!item || typeof item !== "object") {
+//         return null;
+//       }
 
-      const pinned = item as Record<string, unknown>;
-      const name = pinned.name;
+//       const pinned = item as Record<string, unknown>;
+//       const name = pinned.name;
 
-      // Only include items with a valid name string
-      if (typeof name === "string" && name.trim().length > 0) {
-        return { name: name.trim() };
-      }
+//       // Only include items with a valid name string
+//       if (typeof name === "string" && name.trim().length > 0) {
+//         return { name: name.trim() };
+//       }
 
-      return null;
-    })
-    .filter((item): item is PinnedRepo => item !== null);
-}
+//       return null;
+//     })
+//     .filter((item): item is PinnedRepo => item !== null);
+// }
 
 /**
  * Sanitize and transform GitHub API repository data to SanitizedRepo format
  */
 export function sanitizeReposData(
   reposData: GitHubRepoResponse[],
-  pinnedData: PinnedRepo[]
+  // pinnedData: PinnedRepo[]
+  // pinnedData: any[] // Using any[] since we're commenting out pinned functionality
 ): SanitizedRepo[] {
   return reposData.map((repo) => {
     const activityDuration = calculateActivityDuration(
@@ -209,7 +210,7 @@ export function sanitizeReposData(
       languageColor: getLanguageColor(repo.language),
       stars: repo.stargazers_count,
       forks: repo.forks,
-      isPinned: pinnedData.some((pinned) => pinned.name === repo.name),
+      isPinned: false, // Always false since we're not using pinned data
       createdAt: repo.created_at,
       updatedAt: repo.updated_at,
       pushedAt: repo.pushed_at || "",
@@ -390,6 +391,22 @@ export function getActivelyMaintainedRepos(
     const pushed = new Date(repo.pushedAt);
     return pushed >= sixMonthsAgo;
   });
+}
+
+/**
+ * Get top 6 actively used repos (sorted by most recently pushed)
+ */
+export function getTopActivelyUsedRepos(
+  repos: SanitizedRepo[]
+): SanitizedRepo[] {
+  return repos
+    .filter((repo) => repo.pushedAt) // Only include repos with pushedAt data
+    .sort((a, b) => {
+      const dateA = new Date(a.pushedAt).getTime();
+      const dateB = new Date(b.pushedAt).getTime();
+      return dateB - dateA; // Most recent first
+    })
+    .slice(0, 6); // Take top 6
 }
 
 
