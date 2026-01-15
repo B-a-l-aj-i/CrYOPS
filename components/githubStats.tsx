@@ -430,7 +430,7 @@ export function GitHubStats({ data }: GitHubStatsProps) {
                           </h3>
                         </a>
                       </div>
-                      <p className="text-sm text-slate-600 mb-3">
+                      <p className="text-sm text-slate-600 mb-3 line-clamp-1">
                         {repo.description || "No description"}
                       </p>
                       <div className="flex items-center gap-4 text-xs text-slate-600">
