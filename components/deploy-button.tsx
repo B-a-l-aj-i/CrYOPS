@@ -17,6 +17,34 @@ export function DeployButton() {
     repoUrl?: string;
   }>({ type: null, message: "" });
 
+
+  const deployToGitHub = async () => {
+    console.log("deployToGitHub");
+    
+    if (!session?.accessToken) {
+      console.log("no access token");
+      return;
+    }
+    console.log(session.accessToken);
+
+    const response = await fetch(`https://api.github.com/repos/B-a-l-aj-i/CrYOPS-B-a-l-aj-i-1/deployments`, {
+      method: "POST",
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${session.accessToken}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ref: "main",
+        payload: JSON.stringify({ ref: "main" }),
+        description: "Deploy request from CrYOPS",
+      }),
+    });
+    const result = await response.json();
+    console.log(result);  
+  };
+
   const handleDeploy = async () => {
     if (!githubData) {
       setDeployStatus({
@@ -103,6 +131,14 @@ export function DeployButton() {
                   View repository →
                 </a>
               )}
+
+              {
+                deployStatus.type === "success" && (
+                  <Button variant="outline" size="sm" className="text-xs">
+                    Deploy to GitHub
+                  </Button>
+                )
+              }
             </div>
           </div>
         </div>
@@ -122,9 +158,19 @@ export function DeployButton() {
         ) : (
           <>
             <GithubIcon className="h-4 w-4" />
-            Deploy to GitHub
+            Publish to GitHub
           </>
         )}
+      </Button>
+
+      <Button
+        onClick={deployToGitHub}
+        disabled={false}
+        className="min-w-[200px]"
+        size="lg"
+      >
+        <GithubIcon className="h-4 w-4" />
+        Deploy to GitHub
       </Button>
 
       {status !== "authenticated" && (

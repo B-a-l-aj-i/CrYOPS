@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { generateTemplate } from "@/lib/template-generator";
 import { createGitHubRepo, uploadFilesToRepo, repoExists } from "@/lib/github-repo-service";
+import { GitHubData } from "@/app/store";
 
 export async function POST(request: NextRequest) {
   try {
@@ -116,3 +117,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
