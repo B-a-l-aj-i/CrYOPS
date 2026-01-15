@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
     // Get pinned data and validate
     // const rawPinnedData = await pinnedResponse.json();
     // const pinnedData = validatePinnedReposData(rawPinnedData);
-    const pinnedData: any[] = []; // Use empty array for now
+    // const pinnedData: any[] = []; // Use empty array for now
 
     // Handle contributions API response
     const rawContributionsData = await contributionsResponse.json();
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Sanitize and transform repos data
-    const sanitizedReposData = sanitizeReposData(reposData, pinnedData);
+    const sanitizedReposData = sanitizeReposData(reposData);
 
     const languageDistribution =
       calculateLanguageDistribution(sanitizedReposData);
