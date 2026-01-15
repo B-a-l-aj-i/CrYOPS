@@ -77,4 +77,5 @@ export interface GitHubData {
   bestRepo: SanitizedRepo | null;
   mostActiveRepoThisMonth: SanitizedRepo | null;
   activelyMaintainedRepos: SanitizedRepo[];
+  topActivelyUsedRepos: SanitizedRepo[];
 }

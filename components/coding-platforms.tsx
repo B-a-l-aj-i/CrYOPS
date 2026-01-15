@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Code, Plus, X, Loader2, Check } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { Code, Plus, X, Loader2, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useLeetCodeStore } from "@/app/store"
+} from "@/components/ui/select";
+import { useValidateCodingPlatform } from "@/hooks/QueryHooks/useValidateCodingPlatform";
 
 const CODING_PLATFORMS = [
   { value: "leetcode", label: "LeetCode", icon: Code },
@@ -21,99 +21,105 @@ const CODING_PLATFORMS = [
   { value: "codeforces", label: "Codeforces", icon: Code },
   { value: "codewars", label: "Codewars", icon: Code },
   { value: "codechef", label: "CodeChef", icon: Code },
-] as const
+] as const;
 
 interface CodingPlatform {
-  id: string
-  platform: string
-  url: string
-  validationStatus?: "success" | "error" | null
+  id: string;
+  platform: string;
+  url: string;
+  validationStatus?: "success" | "error" | null;
 }
 
 export function CodingPlatforms() {
-  const [codingPlatforms, setCodingPlatforms] = useState<CodingPlatform[]>([])
-  const [selectedPlatform, setSelectedPlatform] = useState<string>("")
-  const [usernameInput, setUsernameInput] = useState<string>("")
-  const [extractingPlatform, setExtractingPlatform] = useState<string | null>(null)
+  const [codingPlatforms, setCodingPlatforms] = useState<CodingPlatform[]>([]);
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
+  const [usernameInput, setUsernameInput] = useState<string>("");
+  const [validatingPlatformId, setValidatingPlatformId] = useState<
+    string | null
+  >(null);
+
+  const validateCodingPlatformMutation = useValidateCodingPlatform();
 
   const handleAddPlatform = () => {
-    if (!selectedPlatform || !usernameInput.trim()) return
+    if (!selectedPlatform || !usernameInput.trim()) return;
 
     const newPlatform: CodingPlatform = {
       id: `${selectedPlatform}-${Date.now()}`,
       platform: selectedPlatform,
       url: usernameInput.trim(),
       validationStatus: null,
-    }
+    };
 
-    setCodingPlatforms([...codingPlatforms, newPlatform])
-    setSelectedPlatform("")
-    setUsernameInput("")
-  }
+    setCodingPlatforms([...codingPlatforms, newPlatform]);
+    setSelectedPlatform("");
+    setUsernameInput("");
+  };
 
   const handleRemovePlatform = (id: string) => {
-    setCodingPlatforms(codingPlatforms.filter((p) => p.id !== id))
-  }
+    setCodingPlatforms(codingPlatforms.filter((p) => p.id !== id));
+  };
 
-  const handleExtractPlatform = async (platform: CodingPlatform) => {
-    setExtractingPlatform(platform.id)
-    
+  const handleExtractPlatform = (platform: CodingPlatform) => {
+    setValidatingPlatformId(platform.id);
+
     // Update validation status to null (reset)
     setCodingPlatforms((prev) =>
       prev.map((p) =>
         p.id === platform.id ? { ...p, validationStatus: null } : p
       )
-    )
+    );
 
-    try {
-      const response = await fetch(`/api/${platform.platform}/validate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          url: platform.url,
-        }),
-      })
+    validateCodingPlatformMutation.mutate(
+      {
+        platform: platform.platform,
+        url: platform.url,
+      },
+      {
+        onSuccess: (result) => {
+          console.log("Validation result:", result);
+          // Update validation status based on result
+          setCodingPlatforms((prev) =>
+            prev.map((p) =>
+              p.id === platform.id
+                ? {
+                    ...p,
+                    validationStatus: result.valid ? "success" : "error",
+                  }
+                : p
+            )
+          );
 
-      const result = await response.json()
-
-      console.log("Validation result:", result)
-      // Update validation status based on result
-      setCodingPlatforms((prev) =>
-        prev.map((p) =>
-          p.id === platform.id
-            ? {
-                ...p,
-                validationStatus: result.valid ? "success" : "error",
-              }
-            : p
-        )
-      )
-
-      if (result.success && result.valid) {
-        console.log("Validated profile:", result.data)
-        useLeetCodeStore.setState({ leetCodeUrl: result.data.profileUrl })
+          if (result.success && result.valid) {
+            console.log("Validated profile:", result.data);
+          }
+        },
+        onError: (error) => {
+          console.error("Validation failed:", error);
+          // Set error status on failure
+          setCodingPlatforms((prev) =>
+            prev.map((p) =>
+              p.id === platform.id ? { ...p, validationStatus: "error" } : p
+            )
+          );
+        },
+        onSettled: () => {
+          setValidatingPlatformId(null);
+        },
       }
-    } catch (error) {
-      console.error("Validation failed:", error)
-      // Set error status on failure
-      setCodingPlatforms((prev) =>
-        prev.map((p) =>
-          p.id === platform.id ? { ...p, validationStatus: "error" } : p
-        )
-      )
-    } finally {
-      setExtractingPlatform(null)
-    }
-  }
+    );
+  };
 
   const getPlatformLabel = (platformValue: string) => {
-    return CODING_PLATFORMS.find((p) => p.value === platformValue)?.label || platformValue
-  }
+    return (
+      CODING_PLATFORMS.find((p) => p.value === platformValue)?.label ||
+      platformValue
+    );
+  };
 
   return (
     <div className="space-y-3 opacity-50 pointer-events-none">
       <Label className="text-sm font-medium">Coding Platforms</Label>
-      
+
       {/* Add Platform Form */}
       <div className="flex gap-2">
         <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
@@ -128,7 +134,7 @@ export function CodingPlatforms() {
             ))}
           </SelectContent>
         </Select>
-        
+
         <div className="relative flex-1">
           <Code className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -138,13 +144,13 @@ export function CodingPlatforms() {
             onChange={(e) => setUsernameInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                handleAddPlatform()
+                handleAddPlatform();
               }
             }}
             className="pl-10"
           />
         </div>
-        
+
         <Button
           onClick={handleAddPlatform}
           disabled={!selectedPlatform || !usernameInput.trim()}
@@ -179,7 +185,10 @@ export function CodingPlatforms() {
                   size="sm"
                   variant="outline"
                   onClick={() => handleExtractPlatform(platform)}
-                  disabled={extractingPlatform === platform.id}
+                  disabled={
+                    validatingPlatformId === platform.id ||
+                    validateCodingPlatformMutation.isPending
+                  }
                   className={cn(
                     platform.validationStatus === "success" &&
                       "bg-green-50 border-green-500 text-green-700 hover:bg-green-100",
@@ -187,7 +196,7 @@ export function CodingPlatforms() {
                       "bg-red-50 border-red-500 text-red-700 hover:bg-red-100"
                   )}
                 >
-                  {extractingPlatform === platform.id ? (
+                  {validatingPlatformId === platform.id ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                   ) : platform.validationStatus === "success" ? (
                     <Check className="h-3 w-3" />
@@ -211,6 +220,5 @@ export function CodingPlatforms() {
         </div>
       )}
     </div>
-  )
+  );
 }
-
