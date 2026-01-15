@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     const [
       userResponse,
       contributionsResponse,
-      // pinnedResponse,
+      pinnedResponse,
       issuesResponse,
       prsResponse,
     ] = await Promise.all([
@@ -74,11 +74,11 @@ export async function POST(request: NextRequest) {
           "User-Agent": "Mozilla/5.0",
         },
       }),
-      // fetch(`${PINNED_API_BASE}/${username}`, {
-      //   headers: {
-      //     "User-Agent": "Mozilla/5.0",
-      //   },
-      // }),
+      fetch(`${PINNED_API_BASE}/${username}`, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+        },
+      }),
       fetch(`${GITHUB_ISSUES_API}${username}`, {
         headers: {
           "User-Agent": "Mozilla/5.0",
@@ -120,18 +120,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // if (!pinnedResponse.ok) {
-    //   failures.push({
-    //     api: "Pinned Repos API",
-    //     status: pinnedResponse.status,
-    //     statusText: pinnedResponse.statusText,
-    //   });
-    //   console.error(
-    //     `[GitHub API] Pinned Repos API failed for ${username}:`,
-    //     pinnedResponse.status,
-    //     pinnedResponse.statusText
-    //   );
-    // }
+    if (!pinnedResponse.ok) {
+      failures.push({
+        api: "Pinned Repos API",
+        status: pinnedResponse.status,
+        statusText: pinnedResponse.statusText,
+      });
+      console.error(
+        `[GitHub API] Pinned Repos API failed for ${username}:`,
+        pinnedResponse.status,
+        pinnedResponse.statusText
+      );
+    }
 
     if (!issuesResponse.ok) {
       failures.push({
@@ -186,8 +186,8 @@ export async function POST(request: NextRequest) {
     const reposData = validateReposData(rawReposData);
 
     // Get pinned data and validate
-    // const rawPinnedData = await pinnedResponse.json();
-    // const pinnedData = validatePinnedReposData(rawPinnedData);
+    const rawPinnedData = await pinnedResponse.json();
+    const pinnedData = validatePinnedReposData(rawPinnedData);
 
     // Handle contributions API response
     const rawContributionsData = await contributionsResponse.json();
@@ -215,7 +215,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Sanitize and transform repos data
-    const sanitizedReposData = sanitizeReposData(reposData, []); // pinnedData is not used for now
+    const sanitizedReposData = sanitizeReposData(reposData, pinnedData);
 
     const languageDistribution =
       calculateLanguageDistribution(sanitizedReposData);
