@@ -6,9 +6,10 @@ import {
   getContributionDetails,
   getMostActiveRepoThisMonth,
   getActivelyMaintainedRepos,
+  getTopActivelyUsedRepos,
   validateContributionsData,
   validateReposData,
-  validatePinnedReposData,
+  // validatePinnedReposData,
   fetchAllRepos,
 } from "@/lib/github/helpers";
 import {
@@ -21,7 +22,7 @@ import { validateUserData } from "@/lib/github/helpers";
 const GITHUB_CONTRIBUTIONS_API =
   "https://github-contributions-api.jogruber.de/v4";
 export const GITHUB_API_BASE = "https://api.github.com";
-const PINNED_API_BASE = "https://pinned.berrysauce.dev/get";
+// const PINNED_API_BASE = "https://pinned.berrysauce.dev/get";
 const GITHUB_ISSUES_API = "https://api.github.com/search/issues?q=author:";
 const GITHUB_PR_TYPE = "type:pr";
 
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     const [
       userResponse,
       contributionsResponse,
-      pinnedResponse,
+      // pinnedResponse,
       issuesResponse,
       prsResponse,
     ] = await Promise.all([
@@ -74,11 +75,11 @@ export async function POST(request: NextRequest) {
           "User-Agent": "Mozilla/5.0",
         },
       }),
-      fetch(`${PINNED_API_BASE}/${username}`, {
-        headers: {
-          "User-Agent": "Mozilla/5.0",
-        },
-      }),
+      // fetch(`${PINNED_API_BASE}/${username}`, {
+      //   headers: {
+      //     "User-Agent": "Mozilla/5.0",
+      //   },
+      // }),
       fetch(`${GITHUB_ISSUES_API}${username}`, {
         headers: {
           "User-Agent": "Mozilla/5.0",
@@ -120,18 +121,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!pinnedResponse.ok) {
-      failures.push({
-        api: "Pinned Repos API",
-        status: pinnedResponse.status,
-        statusText: pinnedResponse.statusText,
-      });
-      console.error(
-        `[GitHub API] Pinned Repos API failed for ${username}:`,
-        pinnedResponse.status,
-        pinnedResponse.statusText
-      );
-    }
+    // if (!pinnedResponse.ok) {
+    //   failures.push({
+    //     api: "Pinned Repos API",
+    //     status: pinnedResponse.status,
+    //     statusText: pinnedResponse.statusText,
+    //   });
+    //   console.error(
+    //     `[GitHub API] Pinned Repos API failed for ${username}:`,
+    //     pinnedResponse.status,
+    //     pinnedResponse.statusText
+    //   );
+    // }
 
     if (!issuesResponse.ok) {
       failures.push({
@@ -186,8 +187,9 @@ export async function POST(request: NextRequest) {
     const reposData = validateReposData(rawReposData);
 
     // Get pinned data and validate
-    const rawPinnedData = await pinnedResponse.json();
-    const pinnedData = validatePinnedReposData(rawPinnedData);
+    // const rawPinnedData = await pinnedResponse.json();
+    // const pinnedData = validatePinnedReposData(rawPinnedData);
+    const pinnedData: any[] = []; // Use empty array for now
 
     // Handle contributions API response
     const rawContributionsData = await contributionsResponse.json();
@@ -240,6 +242,9 @@ export async function POST(request: NextRequest) {
     const activelyMaintainedRepos =
       getActivelyMaintainedRepos(sanitizedReposData);
 
+    // Get top 6 actively used repos
+    const topActivelyUsedRepos = getTopActivelyUsedRepos(sanitizedReposData);
+
     // Structure response for UI
     return Response.json({
       success: true,
@@ -276,6 +281,8 @@ export async function POST(request: NextRequest) {
         mostActiveRepoThisMonth,
 
         activelyMaintainedRepos: activelyMaintainedRepos,
+
+        topActivelyUsedRepos: topActivelyUsedRepos,
 
         profileUrl: url,
       },
