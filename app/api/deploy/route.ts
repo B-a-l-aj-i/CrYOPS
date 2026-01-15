@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { generateTemplate } from "@/lib/template-generator";
 import { createGitHubRepo, uploadFilesToRepo, repoExists } from "@/lib/github-repo-service";
+import { createVercelService } from "@/lib/vercel-service";
 import { GitHubData } from "@/app/store";
 
 export async function POST(request: NextRequest) {
@@ -90,6 +91,36 @@ export async function POST(request: NextRequest) {
       }
     );
 
+    // Deploy to Vercel if access token is available
+    let vercelDeployment = null;
+    if (session.vercelAccessToken) {
+      try {
+        const vercelService = createVercelService(session.vercelAccessToken);
+        
+        // Create Vercel project
+        const projectName = `cryops-${username.toLowerCase()}`;
+        const vercelProject = await vercelService.createProject({
+          name: projectName,
+          framework: 'nextjs',
+          buildCommand: 'npm run build',
+          outputDirectory: 'out',
+          installCommand: 'npm install',
+          gitRepository: {
+            repo: repo.full_name,
+            type: 'github',
+          },
+        });
+
+        // Deploy the project
+        vercelDeployment = await vercelService.deployProject(vercelProject.id, repo.full_name);
+        
+        console.log(`Vercel deployment created: ${vercelDeployment.url}`);
+      } catch (vercelError) {
+        console.error("Vercel deployment failed:", vercelError);
+        // Continue without failing the entire deployment
+      }
+    }
+
     return Response.json({
       success: true,
       data: {
@@ -101,6 +132,11 @@ export async function POST(request: NextRequest) {
         },
         filesUploaded: uploadedCount,
         totalFiles: files.length,
+        vercelDeployment: vercelDeployment ? {
+          id: vercelDeployment.id,
+          url: vercelDeployment.url,
+          alias: vercelDeployment.alias,
+        } : null,
       },
     });
   } catch (error) {

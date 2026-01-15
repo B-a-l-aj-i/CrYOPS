@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { Button } from "./ui/button";
-import { GithubIcon, Loader2, CheckCircle2, XCircle } from "lucide-react";
+import { GithubIcon, Loader2, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 import { useGithubStore } from "@/app/store";
 import type { GitHubData } from "@/app/store";
 
@@ -15,35 +15,11 @@ export function DeployButton() {
     type: "success" | "error" | null;
     message: string;
     repoUrl?: string;
+    vercelUrl?: string;
   }>({ type: null, message: "" });
 
 
-  const deployToGitHub = async () => {
-    console.log("deployToGitHub");
-    
-    if (!session?.accessToken) {
-      console.log("no access token");
-      return;
-    }
-    console.log(session.accessToken);
 
-    const response = await fetch(`https://api.github.com/repos/B-a-l-aj-i/CrYOPS-B-a-l-aj-i-1/deployments`, {
-      method: "POST",
-      headers: {
-        Accept: "application/vnd.github+json",
-        Authorization: `Bearer ${session.accessToken}`,
-        "X-GitHub-Api-Version": "2022-11-28",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        ref: "main",
-        payload: JSON.stringify({ ref: "main" }),
-        description: "Deploy request from CrYOPS",
-      }),
-    });
-    const result = await response.json();
-    console.log(result);  
-  };
 
   const handleDeploy = async () => {
     if (!githubData) {
@@ -79,10 +55,16 @@ export function DeployButton() {
       const result = await response.json();
 
       if (response.ok && result.success) {
+        let message = "Portfolio deployed to GitHub successfully!";
+        if (result.data.vercelDeployment) {
+          message = "Portfolio deployed to GitHub and Vercel successfully!";
+        }
+        
         setDeployStatus({
           type: "success",
-          message: "Portfolio deployed successfully!",
+          message,
           repoUrl: result.data.repo.html_url,
+          vercelUrl: result.data.vercelDeployment?.url,
         });
       } else {
         setDeployStatus({
@@ -126,19 +108,23 @@ export function DeployButton() {
                   href={deployStatus.repoUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm underline mt-1 inline-block"
+                  className="text-sm underline mt-1 inline-block flex items-center gap-1"
                 >
+                  <GithubIcon className="h-3 w-3" />
                   View repository →
                 </a>
               )}
-
-              {
-                deployStatus.type === "success" && (
-                  <Button variant="outline" size="sm" className="text-xs">
-                    Deploy to GitHub
-                  </Button>
-                )
-              }
+              {deployStatus.vercelUrl && (
+                <a
+                  href={deployStatus.vercelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm underline mt-1 inline-block flex items-center gap-1 text-blue-600"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  View live site →
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -158,24 +144,32 @@ export function DeployButton() {
         ) : (
           <>
             <GithubIcon className="h-4 w-4" />
-            Publish to GitHub
+            {session?.vercelAccessToken ? "Deploy to GitHub + Vercel" : "Publish to GitHub"}
           </>
         )}
       </Button>
 
-      <Button
-        onClick={deployToGitHub}
-        disabled={false}
-        className="min-w-[200px]"
-        size="lg"
-      >
-        <GithubIcon className="h-4 w-4" />
-        Deploy to GitHub
-      </Button>
+      {status === "authenticated" && !session.vercelAccessToken && (
+        <Button
+          onClick={() => signIn("vercel")}
+          variant="outline"
+          className="min-w-[200px]"
+          size="lg"
+        >
+          <ExternalLink className="h-4 w-4" />
+          Connect Vercel for Auto-Deploy
+        </Button>
+      )}
 
       {status !== "authenticated" && (
         <p className="text-xs text-muted-foreground text-center max-w-md">
           Please sign in with GitHub to deploy your portfolio
+        </p>
+      )}
+      
+      {status === "authenticated" && !session.vercelAccessToken && (
+        <p className="text-xs text-muted-foreground text-center max-w-md">
+          Connect Vercel to automatically deploy your portfolio to a live URL
         </p>
       )}
     </div>

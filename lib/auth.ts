@@ -1,6 +1,5 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
-import Netlify from "next-auth/providers/netlify"
 
 interface GitHubProfile {
   login?: string
@@ -17,6 +16,7 @@ declare module "next-auth" {
       githubUsername?: string
     }
     accessToken?: string
+    vercelAccessToken?: string
   }
   interface User {
     githubProfileUrl?: string
@@ -32,11 +32,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { 
     strategy: "jwt"  // stateless JWT in secure cookies, no DB needed
   },
+  pages: {
+    error: "/auth/error",
+  },
   providers: [
-    Netlify({
-      clientId:process.env.NETLIFY_ID!,
-      clientSecret:process.env.NETLIFY_SECRET!,
-    }),
     GitHub({
       clientId: process.env.GITHUB_ID!,
       clientSecret: process.env.GITHUB_SECRET!,
@@ -46,6 +45,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
     }),
+    {
+      id: "vercel",
+      name: "Vercel",
+      type: "oauth",
+      issuer: "https://vercel.com", 
+      authorization: {
+        url: "https://vercel.com/oauth/authorize",
+        params: {
+          scope:"openid email profile",
+        },
+      },
+      token: "https://api.vercel.com/login/oauth/token",
+      userinfo: "https://api.vercel.com/login/oauth/userinfo",
+      clientId: process.env.VERCEL_CLIENT_ID!,
+      clientSecret: process.env.VERCEL_CLIENT_SECRET!,
+    },
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
@@ -70,6 +85,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
         tokenWithNetlify.accessToken = account.access_token
       }
+      if (account?.provider === "vercel" && account.access_token) {
+        const tokenWithVercel = token as typeof token & {
+          vercelAccessToken?: string
+        }
+        tokenWithVercel.vercelAccessToken = account.access_token
+      }
       return token
     },
     async session({ session, token }) {
@@ -78,6 +99,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         githubProfileUrl?: string
         githubUsername?: string
         accessToken?: string
+        vercelAccessToken?: string
       }
       if (tokenWithGithub.githubProfileUrl && typeof tokenWithGithub.githubProfileUrl === "string") {
         session.user.githubProfileUrl = tokenWithGithub.githubProfileUrl
@@ -87,6 +109,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       if (tokenWithGithub.accessToken && typeof tokenWithGithub.accessToken === "string") {
         session.accessToken = tokenWithGithub.accessToken
+      }
+      if (tokenWithGithub.vercelAccessToken && typeof tokenWithGithub.vercelAccessToken === "string") {
+        session.vercelAccessToken = tokenWithGithub.vercelAccessToken
       }
       return session
     },
