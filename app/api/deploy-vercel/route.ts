@@ -53,6 +53,13 @@ export async function POST(request: NextRequest) {
 
     const [, owner, repoName] = githubUrlMatch;
 
+    const projectName = owner.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+    console.log({
+      projectName,
+      owner,
+      repoName,
+    });
+
     // Initialize Vercel client with user's PAT directly
     const vercel = new Vercel({
       bearerToken: vercelPat,
@@ -62,7 +69,7 @@ export async function POST(request: NextRequest) {
       // Step 1: Create Vercel project linked to GitHub repo
       const project = await vercel.projects.createProject({
         requestBody: {
-          name: `${owner}'s portfolio`,
+          name: projectName,
           framework: 'vite',
           gitRepository: {
             repo: `${owner}/${repoName}`,
@@ -76,22 +83,9 @@ export async function POST(request: NextRequest) {
 
       console.log(`Vercel project created: ${project.id} for ${owner}/${repoName}`);
 
-      console.log({
-        name: `${owner}'s portfolio`,
-        project: project.id,
-        target: "production",
-        gitSource: {
-          type: "github",
-          org: owner,
-          repo: `${repoName}`,
-          ref: "main",
-        }
-      });
-      
-
       const deployment = await vercel.deployments.createDeployment({
         requestBody: {
-          name: `${owner}'s portfolio`,
+          name: projectName,
           project: project.id,
           target: "production",
           gitSource: {
