@@ -54,11 +54,6 @@ export async function POST(request: NextRequest) {
     const [, owner, repoName] = githubUrlMatch;
 
     const projectName = owner.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-    console.log({
-      projectName,
-      owner,
-      repoName,
-    });
 
     // Initialize Vercel client with user's PAT directly
     const vercel = new Vercel({
