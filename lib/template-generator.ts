@@ -15,10 +15,13 @@ export function generateTemplate(githubData: GitHubData, username: string): Temp
   files.push({
     path: "package.json",
     content: JSON.stringify({
-      "name": `${username}-portfolio`,
+      "name": `${username}'s portfolio`,
       "private": true,
       "version": "0.1.0",
       "type": "module",
+      "engines": {
+        "node": "20.x"
+      },
       "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",

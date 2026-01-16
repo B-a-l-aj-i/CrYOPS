@@ -62,29 +62,47 @@ export async function POST(request: NextRequest) {
       // Step 1: Create Vercel project linked to GitHub repo
       const project = await vercel.projects.createProject({
         requestBody: {
-          name: `portfoliobycryops`,
+          name: `${owner}'s portfolio`,
           framework: 'vite',
           gitRepository: {
             repo: `${owner}/${repoName}`,
             type: 'github'
           },
-          buildCommand: 'pnpm run build',
-          installCommand: 'pnpm install',
+          buildCommand: 'npm run build',
+          installCommand: 'npm install',
           outputDirectory: 'dist',
         }
       });
 
       console.log(`Vercel project created: ${project.id} for ${owner}/${repoName}`);
 
-      // Step 2: Trigger deployment to Vercel
-      const deployment = await vercel.deployments.createDeployment({
-        requestBody: {
-          name: `deploymentbycryops`,
-          project: project.id,
-          files: [],
-          target: 'production'
+      console.log({
+        name: `${owner}'s portfolio`,
+        project: project.id,
+        target: "production",
+        gitSource: {
+          type: "github",
+          org: owner,
+          repo: `${repoName}`,
+          ref: "main",
         }
       });
+      
+
+      const deployment = await vercel.deployments.createDeployment({
+        requestBody: {
+          name: `${owner}'s portfolio`,
+          project: project.id,
+          target: "production",
+          gitSource: {
+            type: "github",
+            org: owner,
+            repo: `${repoName}`,
+            ref: "main",
+          }
+        }
+      });
+      
 
       console.log(`Vercel deployment created: ${deployment.id}`);
 
