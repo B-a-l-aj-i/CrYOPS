@@ -44,22 +44,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
       },
     }),
-    {
-      id: "vercel",
-      name: "Vercel",
-      type: "oauth",
-      issuer: "https://vercel.com", 
-      authorization: {
-        url: "https://vercel.com/oauth/authorize",
-        params: {
-          scope:"openid email profile",
-        },
-      },
-      token: "https://api.vercel.com/login/oauth/token",
-      userinfo: "https://api.vercel.com/login/oauth/userinfo",
-      clientId: process.env.VERCEL_CLIENT_ID!,
-      clientSecret: process.env.VERCEL_CLIENT_SECRET!,
-    },
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
@@ -68,7 +52,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         githubProfileUrl?: string
         githubUsername?: string
         accessToken?: string
-        vercelAccessToken?: string
       }
 
       // When user signs in with GitHub, store the profile URL and access token
@@ -81,11 +64,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           enhancedToken.accessToken = account.access_token
         }
       }
-      
-      // When user signs in with Vercel, add Vercel access token but preserve existing data
-      if (account?.provider === "vercel" && account.access_token) {
-        enhancedToken.vercelAccessToken = account.access_token
-      }
 
       return enhancedToken
     },
@@ -95,7 +73,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         githubProfileUrl?: string
         githubUsername?: string
         accessToken?: string
-        vercelAccessToken?: string
       }
       
       // Only update fields that exist and are strings
@@ -107,9 +84,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       if (enhancedToken.accessToken && typeof enhancedToken.accessToken === "string") {
         session.accessToken = enhancedToken.accessToken
-      }
-      if (enhancedToken.vercelAccessToken && typeof enhancedToken.vercelAccessToken === "string") {
-        session.vercelAccessToken = enhancedToken.vercelAccessToken
       }
       
       return session

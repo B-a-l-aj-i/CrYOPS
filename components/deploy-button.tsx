@@ -12,11 +12,9 @@ export function DeployButton() {
   const githubData = useGithubStore((state) => state.githubData);
   const { 
     isGithubDeployed,
-    isVercelAuthPending,
     repoUrl: savedRepoUrl,
     vercelUrl: savedVercelUrl,
     setGithubDeployed,
-    setVercelAuthPending,
     setVercelDeployed,
     clearDeploymentData
   } = useDeploymentStore();
@@ -211,8 +209,6 @@ export function DeployButton() {
     }
   }, [savedRepoUrl, savedVercelUrl, deployStatus.type, isGithubDeployed]);
 
-  const githubButtonDisabled = isDeploying || status !== "authenticated" || !githubData;
-  const vercelButtonDisabled = isDeploying || !isGithubDeployed || !session?.vercelAccessToken;
 
   return (
     <div className="flex flex-col items-center gap-4 pt-6">

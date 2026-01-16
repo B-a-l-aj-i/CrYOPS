@@ -1,30 +1,39 @@
 import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
 import { Vercel } from '@vercel/sdk';
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-
-    if (!session?.vercelAccessToken) {
-      return Response.json(
-        {
-          success: false,
-          error: "Not authenticated with Vercel or missing Vercel access token",
-        },
-        { status: 401 }
-      );
-    }
-
-    // Get GitHub repo URL from request body
+    // Get data from request body (no session check needed)
     const body = await request.json();
-    const { githubRepoUrl } = body;
+    const { githubRepoUrl, vercelPat } = body;
 
+    // Validate inputs
     if (!githubRepoUrl) {
       return Response.json(
         {
           success: false,
           error: "GitHub repository URL is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!vercelPat) {
+      return Response.json(
+        {
+          success: false,
+          error: "Vercel Personal Access Token is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Validate PAT format
+    if (!vercelPat) {
+      return Response.json(
+        {
+          success: false,
+          error: "Invalid Vercel token format. Token should start with 'vercel_'",
         },
         { status: 400 }
       );
@@ -36,7 +45,7 @@ export async function POST(request: NextRequest) {
       return Response.json(
         {
           success: false,
-          error: "Invalid GitHub repository URL format",
+          error: "Invalid GitHub repository URL format. Expected format: github.com/owner/repo",
         },
         { status: 400 }
       );
@@ -44,64 +53,92 @@ export async function POST(request: NextRequest) {
 
     const [, owner, repoName] = githubUrlMatch;
 
+    // Initialize Vercel client with user's PAT directly
     const vercel = new Vercel({
-      bearerToken: "oS20WsSUWwkmrbNtB1G12USE",
+      bearerToken: vercelPat,
     });
 
     try {
-      // Create a new deployment
-      const createResponse = await vercel.deployments.createDeployment({
+      // Step 1: Create Vercel project linked to GitHub repo
+      const project = await vercel.projects.createProject({
         requestBody: {
-          name: `${owner}`,
-          target: 'production',
-          gitSource: {
-            type: 'github',
-            org: owner,
-            repo: repoName,
-            ref: 'main',
+          name: `portfoliobycryops`,
+          framework: 'vite',
+          gitRepository: {
+            repo: `${owner}/${repoName}`,
+            type: 'github'
           },
-          projectSettings: {
-            framework: 'vite',
-            rootDirectory: null,
-            installCommand: 'pnpm install',
-            buildCommand: 'pnpm run build',
-            outputDirectory: 'dist',
-          },
-        },
+          buildCommand: 'pnpm run build',
+          installCommand: 'npm install',
+          outputDirectory: 'dist',
+        }
       });
 
-      console.log(`Vercel deployment created: ID ${createResponse.id} and status ${createResponse.status}`);
+      console.log(`Vercel project created: ${project.id} for ${owner}/${repoName}`);
 
-      // Return successful response
+      // Step 2: Trigger deployment to Vercel
+      const deployment = await vercel.deployments.createDeployment({
+        requestBody: {
+          name: `deploymentbycryops`,
+          project: project.id,
+          files: [],
+          target: 'production'
+        }
+      });
+
+      console.log(`Vercel deployment created: ${deployment.id}`);
+
+      // Step 3: Return success response with public URLs
       return Response.json({
         success: true,
         data: {
           vercelDeployment: {
-            id: createResponse.id,
-            url: createResponse.url,
-            status: createResponse.status,
+            url: deployment.url
+              ? `https://${deployment.url}`
+              : null,
+      
+            dashboardUrl: `https://vercel.com/${deployment.creator.username}/${project.name}/deployments/${deployment.id}`,
+      
+            projectId: project.id,
+            deploymentId: deployment.id,
+            status: deployment.status // INITIALIZING | BUILDING | READY | ERROR
           },
-        },
+          message: `Successfully triggered deployment for ${owner}/${repoName} on Vercel`
+        }
       });
+      
 
     } catch (deploymentError) {
-      console.error(
-        deploymentError instanceof Error ? `Deployment Error: ${deploymentError.message}` : String(deploymentError)
-      );
+      console.error('Vercel deployment error:', deploymentError);
+      
+      // Return detailed error information
+      let errorMessage = 'Failed to deploy to Vercel';
+      if (deploymentError instanceof Error) {
+        errorMessage = deploymentError.message;
+      }
+
       return Response.json({
         success: false,
-        error: deploymentError instanceof Error ? deploymentError.message : "Failed to deploy to Vercel",
+        error: errorMessage,
+        details: deploymentError instanceof Error ? {
+          name: deploymentError.name,
+          message: deploymentError.message,
+          stack: deploymentError.stack
+        } : 'Unknown error occurred'
       },
       { status: 500 }
       );
     }
 
   } catch (error) {
-    console.error("Vercel deployment error:", error);
+    console.error("Vercel API error:", error);
+    
+    const errorMessage = error instanceof Error ? error.message : "Failed to deploy to Vercel";
+    
     return Response.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to deploy to Vercel",
+        error: errorMessage,
       },
       { status: 500 }
     );

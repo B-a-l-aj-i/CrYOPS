@@ -105,24 +105,52 @@ export interface GitHubData {
   topActivelyUsedRepos: SanitizedRepo[];
 }
 
+// Vercel token store for PAT management
+interface VercelTokenStore {
+  vercelToken: string | null;
+  tokenCreated: string | null;
+  setVercelToken: (token: string) => void;
+  setTokenCreated: (date: string) => void;
+  clearVercelToken: () => void;
+}
+
 interface DeploymentStore {
   // GitHub deployment state
   isGithubDeployed: boolean;
   repoUrl: string | null;
   githubDeploymentTime: string | null;
   
-  // Vercel deployment state  
-  isVercelAuthPending: boolean;
+  // Vercel deployment state (simplified - no auth tracking)
   vercelUrl: string | null;
   vercelDeploymentTime: string | null;
   
   // Actions
   setGithubDeployed: (repoUrl: string) => void;
-  setVercelAuthPending: (pending: boolean) => void;
   setVercelDeployed: (vercelUrl: string) => void;
   clearDeploymentData: () => void;
 }
 
+export const useVercelTokenStore = create<VercelTokenStore>()(
+  persist(
+    (set) => ({
+      vercelToken: null,
+      tokenCreated: null,
+      setVercelToken: (token) => set({ 
+        vercelToken: token,
+        tokenCreated: new Date().toISOString()
+      }),
+      setTokenCreated: (date) => set({ tokenCreated: date }),
+      clearVercelToken: () => set({ 
+        vercelToken: null, 
+        tokenCreated: null 
+      }),
+    }),
+    {
+      name: "vercel-token-storage",
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
 export const useDeploymentStore = create<DeploymentStore>()(
   persist(
     (set) => ({
@@ -132,7 +160,6 @@ export const useDeploymentStore = create<DeploymentStore>()(
       githubDeploymentTime: null,
       
       // Vercel deployment state
-      isVercelAuthPending: false,
       vercelUrl: null,
       vercelDeploymentTime: null,
       
@@ -143,20 +170,16 @@ export const useDeploymentStore = create<DeploymentStore>()(
           repoUrl, 
           githubDeploymentTime: new Date().toISOString() 
         }),
-      setVercelAuthPending: (pending: boolean) => 
-        set({ isVercelAuthPending: pending }),
       setVercelDeployed: (vercelUrl: string) => 
         set({ 
           vercelUrl, 
-          vercelDeploymentTime: new Date().toISOString(),
-          isVercelAuthPending: false
+          vercelDeploymentTime: new Date().toISOString()
         }),
       clearDeploymentData: () => 
         set({ 
           isGithubDeployed: false,
           repoUrl: null, 
           githubDeploymentTime: null,
-          isVercelAuthPending: false,
           vercelUrl: null, 
           vercelDeploymentTime: null
         }),
@@ -168,7 +191,6 @@ export const useDeploymentStore = create<DeploymentStore>()(
         isGithubDeployed: state.isGithubDeployed,
         repoUrl: state.repoUrl,
         githubDeploymentTime: state.githubDeploymentTime,
-        isVercelAuthPending: state.isVercelAuthPending,
         vercelUrl: state.vercelUrl,
         vercelDeploymentTime: state.vercelDeploymentTime,
       }),

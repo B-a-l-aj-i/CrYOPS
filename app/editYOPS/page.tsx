@@ -126,7 +126,7 @@ export default function EditYOPSPage() {
 
                 {/* Vercel Deploy Button - Only show after GitHub deployment */}
                 {isGithubDeployed && !vercelUrl && (
-                  <DeployToVercelButton />
+                  <DeployToVercelButton githubRepoUrl={repoUrl || ""} />
                 )}
 
                 {/* View deployed links */}

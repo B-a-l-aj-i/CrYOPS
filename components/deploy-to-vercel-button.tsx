@@ -1,54 +1,37 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import { useSession, signIn } from "next-auth/react";
+import { useState, useCallback } from "react";
 import { Button } from "./ui/button";
 import { ExternalLink, Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { useDeploymentStore } from "@/app/store";
+import { useDeploymentStore, useVercelTokenStore } from "@/app/store";
+import { VercelTokenInput } from "./vercel-token-input";
 
-export function DeployToVercelButton() {
-  const { data: session, status } = useSession();
-  const { 
-    repoUrl, 
-    vercelUrl,
-    isVercelAuthPending,
-    setVercelAuthPending,
-    setVercelDeployed,
-  } = useDeploymentStore();
-  
+interface DeployToVercelButtonProps {
+  githubRepoUrl: string;
+  onDeploymentComplete?: (deployment: any) => void;
+}
+
+export function DeployToVercelButton({ githubRepoUrl, onDeploymentComplete }: DeployToVercelButtonProps) {
   const [isDeploying, setIsDeploying] = useState(false);
   const [deployStatus, setDeployStatus] = useState<{
     type: "success" | "error" | null;
     message: string;
     vercelUrl?: string;
   }>({ type: null, message: "" });
+  const [showTokenInput, setShowTokenInput] = useState(false);
+  
+  const {
+    vercelUrl: savedVercelUrl,
+    setVercelDeployed,
+  } = useDeploymentStore();
 
-  const handleVercelConnect = async () => {
-    if (!repoUrl) {
-      setDeployStatus({
-        type: "error",
-        message: "No GitHub repository found. Please publish to GitHub first.",
-      });
-      return;
-    }
-
-    if (status !== "authenticated" || !session?.accessToken) {
-      setDeployStatus({
-        type: "error",
-        message: "Please sign in with GitHub first before connecting Vercel.",
-      });
-      return;
-    }
-
-    // Mark Vercel auth as pending before redirect
-    setVercelAuthPending(true);
-    
-    // Trigger Vercel OAuth
-    signIn("vercel");
-  };
+  const {
+    vercelToken: storedToken,
+  } = useVercelTokenStore();
 
   const handleVercelDeploy = useCallback(async () => {
-    if (!repoUrl) {
+    console.log("handleVercelDeploy", githubRepoUrl, storedToken);
+    if (!githubRepoUrl) {
       setDeployStatus({
         type: "error",
         message: "No GitHub repository found. Please publish to GitHub first.",
@@ -56,11 +39,9 @@ export function DeployToVercelButton() {
       return;
     }
 
-    if (!session?.vercelAccessToken) {
-      setDeployStatus({
-        type: "error",
-        message: "Please authenticate with Vercel first.",
-      });
+    if (!storedToken) {
+      // Show token input instead
+      setShowTokenInput(true);
       return;
     }
 
@@ -74,7 +55,8 @@ export function DeployToVercelButton() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          githubRepoUrl: repoUrl,
+          githubRepoUrl,
+          vercelPat: storedToken,
         }),
       });
 
@@ -86,9 +68,14 @@ export function DeployToVercelButton() {
         
         setDeployStatus({
           type: "success",
-          message: "Portfolio successfully deployed to Vercel! Your site is now live!",
+          message: result.data.message || "Portfolio successfully deployed to Vercel! Your site is now live!",
           vercelUrl: result.data.vercelDeployment.url,
         });
+
+        // Notify parent component
+        if (onDeploymentComplete) {
+          onDeploymentComplete(result.data);
+        }
       } else {
         setDeployStatus({
           type: "error",
@@ -104,31 +91,93 @@ export function DeployToVercelButton() {
     } finally {
       setIsDeploying(false);
     }
-  }, [repoUrl, session, setVercelDeployed]);
+  }, [githubRepoUrl, storedToken]);
 
-  // Handle deployment recovery after Vercel OAuth
-  useEffect(() => {
-    if (
-      isVercelAuthPending && 
-      status === "authenticated" && 
-      session?.vercelAccessToken && 
-      repoUrl &&
-      !vercelUrl
-    ) {
-      // Clear the pending flag
-      setVercelAuthPending(false);
-      
-      // Auto-trigger Vercel deployment after successful auth
+  const handleTokenSet = (token: string) => {
+    setShowTokenInput(false);
+    // Immediately trigger deployment after token is set
+    setTimeout(() => {
       handleVercelDeploy();
-    }
-  }, [isVercelAuthPending, status, session, repoUrl, vercelUrl, handleVercelDeploy, setVercelAuthPending]);
+    }, 100);
+  };
 
-  const shouldShowConnectButton = !session?.vercelAccessToken && !vercelUrl;
-  const shouldShowDeployButton = session?.vercelAccessToken && !vercelUrl;
-  const vercelButtonDisabled = isDeploying || !repoUrl || !session?.vercelAccessToken;
+  const handleTokenCancel = () => {
+    setShowTokenInput(false);
+  };
 
-  return (
+ return (
     <div className="flex flex-col items-center gap-4">
+      {/* Token Input Modal */}
+      {showTokenInput && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full border shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">Connect Vercel</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Enter your Vercel Personal Access Token to deploy your portfolio to your Vercel account.
+            </p>
+            <VercelTokenInput
+              onTokenSet={handleTokenSet}
+              onCancel={handleTokenCancel}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Deploy Button */}
+      {!showTokenInput && (
+        <>
+          {storedToken && (
+            <div className="text-xs text-green-600 text-center mb-2">
+              ✓ Vercel token ready
+            </div>
+          )}
+
+          <Button
+            onClick={handleVercelDeploy}
+            variant="outline"
+            className="cursor-pointer min-w-[200px]"
+            size="lg"
+            disabled={isDeploying || !githubRepoUrl || !storedToken}
+          >
+            {isDeploying ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Deploying...
+              </>
+            ) : !storedToken ? (
+              <>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Connect Vercel for Live URL
+              </>
+            ) : (
+              <>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Deploy to Vercel
+              </>
+            )}
+          </Button>
+        </>
+      )}
+
+      {/* Instructions when no token */}
+      {!storedToken && !showTokenInput && (
+        <div className="text-center">
+          <Button
+            onClick={() => setShowTokenInput(true)}
+            variant="outline"
+            className="cursor-pointer min-w-[200px]"
+            size="lg"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Connect Vercel for Live URL
+          </Button>
+          <p className="text-xs text-muted-foreground text-center max-w-md mt-2">
+            Enter your Vercel Personal Access Token to deploy to your Vercel account
+          </p>
+        </div>
+      )}
+
+      {/* Deployment Status */}
       {deployStatus.type && (
         <div
           className={`w-full max-w-md p-4 rounded-lg border ${
@@ -160,55 +209,6 @@ export function DeployToVercelButton() {
           </div>
         </div>
       )}
-
-      <div className="text-center space-y-3">
-        {shouldShowConnectButton && (
-          <Button
-            onClick={handleVercelConnect}
-            variant="outline"
-            className="cursor-pointer min-w-[200px]"
-            size="lg"
-            disabled={!repoUrl}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Connect Vercel for Live URL
-          </Button>
-        )}
-
-        {shouldShowDeployButton && (
-          <Button
-            onClick={handleVercelDeploy}
-            variant="outline"
-            className="cursor-pointer min-w-[200px]"
-            size="lg"
-            disabled={vercelButtonDisabled}
-          >
-            {isDeploying ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Deploying...
-              </>
-            ) : (
-              <>
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Deploy to Vercel
-              </>
-            )}
-          </Button>
-        )}
-
-        {!session?.vercelAccessToken && (
-          <p className="text-xs text-muted-foreground text-center max-w-md">
-            Connect Vercel to automatically deploy your portfolio to a live URL
-          </p>
-        )}
-
-        {session?.vercelAccessToken && !vercelUrl && (
-          <p className="text-xs text-muted-foreground text-center max-w-md">
-            Click &quot;Deploy to Vercel&quot; to get your live portfolio URL
-          </p>
-        )}
-      </div>
     </div>
   );
 }
