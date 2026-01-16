@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import {
   type SanitizedRepo,
   type ContributionDetails,
@@ -13,12 +14,24 @@ interface LeetCodeStore {
   setLeetCodeData: (leetCodeData: LeetCodeData) => void;
 }
 
-export const useLeetCodeStore = create<LeetCodeStore>((set) => ({
-  leetCodeUrl: "",
-  leetCodeData: null,
-  setLeetCodeUrl: (leetCodeUrl: string) => set({ leetCodeUrl }),
-  setLeetCodeData: (leetCodeData: LeetCodeData) => set({ leetCodeData }),
-}));
+export const useLeetCodeStore = create<LeetCodeStore>()(
+  persist(
+    (set) => ({
+      leetCodeUrl: "",
+      leetCodeData: null,
+      setLeetCodeUrl: (leetCodeUrl: string) => set({ leetCodeUrl }),
+      setLeetCodeData: (leetCodeData: LeetCodeData) => set({ leetCodeData }),
+    }),
+    {
+      name: "leetcode-portfolio-data",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        leetCodeUrl: state.leetCodeUrl,
+        leetCodeData: state.leetCodeData,
+      }),
+    }
+  )
+);
 
 interface GithubStore {
     githubUrl: string;
@@ -27,12 +40,24 @@ interface GithubStore {
     setGithubData: (githubData: GitHubData) => void;
   }
 
-export const useGithubStore = create<GithubStore>((set) => ({
-  githubUrl: "",
-  githubData: null,
-  setGithubUrl: (githubUrl: string) => set({ githubUrl }),
-  setGithubData: (githubData: GitHubData) => set({ githubData }),
-}));
+export const useGithubStore = create<GithubStore>()(
+  persist(
+    (set) => ({
+      githubUrl: "",
+      githubData: null,
+      setGithubUrl: (githubUrl: string) => set({ githubUrl }),
+      setGithubData: (githubData: GitHubData) => set({ githubData }),
+    }),
+    {
+      name: "github-portfolio-data",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        githubUrl: state.githubUrl,
+        githubData: state.githubData,
+      }),
+    }
+  )
+);
 
 
 
@@ -79,3 +104,74 @@ export interface GitHubData {
   activelyMaintainedRepos: SanitizedRepo[];
   topActivelyUsedRepos: SanitizedRepo[];
 }
+
+interface DeploymentStore {
+  // GitHub deployment state
+  isGithubDeployed: boolean;
+  repoUrl: string | null;
+  githubDeploymentTime: string | null;
+  
+  // Vercel deployment state  
+  isVercelAuthPending: boolean;
+  vercelUrl: string | null;
+  vercelDeploymentTime: string | null;
+  
+  // Actions
+  setGithubDeployed: (repoUrl: string) => void;
+  setVercelAuthPending: (pending: boolean) => void;
+  setVercelDeployed: (vercelUrl: string) => void;
+  clearDeploymentData: () => void;
+}
+
+export const useDeploymentStore = create<DeploymentStore>()(
+  persist(
+    (set) => ({
+      // GitHub deployment state
+      isGithubDeployed: false,
+      repoUrl: null,
+      githubDeploymentTime: null,
+      
+      // Vercel deployment state
+      isVercelAuthPending: false,
+      vercelUrl: null,
+      vercelDeploymentTime: null,
+      
+      // Actions
+      setGithubDeployed: (repoUrl: string) => 
+        set({ 
+          isGithubDeployed: true,
+          repoUrl, 
+          githubDeploymentTime: new Date().toISOString() 
+        }),
+      setVercelAuthPending: (pending: boolean) => 
+        set({ isVercelAuthPending: pending }),
+      setVercelDeployed: (vercelUrl: string) => 
+        set({ 
+          vercelUrl, 
+          vercelDeploymentTime: new Date().toISOString(),
+          isVercelAuthPending: false
+        }),
+      clearDeploymentData: () => 
+        set({ 
+          isGithubDeployed: false,
+          repoUrl: null, 
+          githubDeploymentTime: null,
+          isVercelAuthPending: false,
+          vercelUrl: null, 
+          vercelDeploymentTime: null
+        }),
+    }),
+    {
+      name: "deployment-tracking-data",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        isGithubDeployed: state.isGithubDeployed,
+        repoUrl: state.repoUrl,
+        githubDeploymentTime: state.githubDeploymentTime,
+        isVercelAuthPending: state.isVercelAuthPending,
+        vercelUrl: state.vercelUrl,
+        vercelDeploymentTime: state.vercelDeploymentTime,
+      }),
+    }
+  )
+);

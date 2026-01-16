@@ -81,7 +81,7 @@ export default function About({ githubData /* , leetCodeData */ }: AboutProps) {
 
         {profile.blog && (
           <a
-            href={profile.blog}
+            href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`}
             target="_blank"
             rel="noopener noreferrer"
             className="h-11 px-6 bg-blue-50 rounded-2xl  border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 hover:shadow-sm transition-all duration-300"

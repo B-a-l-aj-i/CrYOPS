@@ -31,6 +31,7 @@ export function Profile() {
         <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80">
           {status === "authenticated" && session?.user?.image ? (
             <Image
+              unoptimized={true}
               src={session.user.image}
               alt={session.user.name || "Profile"}
               width={40}

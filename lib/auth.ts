@@ -27,10 +27,9 @@ declare module "next-auth" {
 // JWT token type extension is handled via the token parameter in callbacks
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  debug: true,
-  trustHost: true,
   session: { 
-    strategy: "jwt"  // stateless JWT in secure cookies, no DB needed
+    strategy: "jwt",  // stateless JWT in secure cookies, no DB needed
+    maxAge: 24 * 60 * 60, // 24 hours
   },
   pages: {
     error: "/auth/error",
@@ -64,55 +63,55 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account, profile }) {
-      // When user signs in with GitHub, store the profile URL and access token
-      if (account?.provider === "github" && profile) {
-        const githubProfile = profile as GitHubProfile
-        const tokenWithGithub = token as typeof token & { 
-          githubProfileUrl?: string
-          githubUsername?: string
-          accessToken?: string
-        }
-        tokenWithGithub.githubProfileUrl = githubProfile.html_url || (githubProfile.login ? `https://github.com/${githubProfile.login}` : undefined)
-        tokenWithGithub.githubUsername = githubProfile.login
-        // Store the access token for API calls
-        if (account.access_token) {
-          tokenWithGithub.accessToken = account.access_token
-        }
-      }
-      if (account?.provider === "netlify" && account.access_token) {
-        const tokenWithNetlify = token as typeof token & {
-          accessToken?: string
-        }
-        tokenWithNetlify.accessToken = account.access_token
-      }
-      if (account?.provider === "vercel" && account.access_token) {
-        const tokenWithVercel = token as typeof token & {
-          vercelAccessToken?: string
-        }
-        tokenWithVercel.vercelAccessToken = account.access_token
-      }
-      return token
-    },
-    async session({ session, token }) {
-      // Expose the GitHub profile URL, username, and access token in the session
-      const tokenWithGithub = token as typeof token & { 
+      // Initialize token properties if they don't exist
+      const enhancedToken = token as typeof token & { 
         githubProfileUrl?: string
         githubUsername?: string
         accessToken?: string
         vercelAccessToken?: string
       }
-      if (tokenWithGithub.githubProfileUrl && typeof tokenWithGithub.githubProfileUrl === "string") {
-        session.user.githubProfileUrl = tokenWithGithub.githubProfileUrl
+
+      // When user signs in with GitHub, store the profile URL and access token
+      if (account?.provider === "github" && profile) {
+        const githubProfile = profile as GitHubProfile
+        enhancedToken.githubProfileUrl = githubProfile.html_url || (githubProfile.login ? `https://github.com/${githubProfile.login}` : undefined)
+        enhancedToken.githubUsername = githubProfile.login
+        // Store the access token for API calls
+        if (account.access_token) {
+          enhancedToken.accessToken = account.access_token
+        }
       }
-      if (tokenWithGithub.githubUsername && typeof tokenWithGithub.githubUsername === "string") {
-        session.user.githubUsername = tokenWithGithub.githubUsername
+      
+      // When user signs in with Vercel, add Vercel access token but preserve existing data
+      if (account?.provider === "vercel" && account.access_token) {
+        enhancedToken.vercelAccessToken = account.access_token
       }
-      if (tokenWithGithub.accessToken && typeof tokenWithGithub.accessToken === "string") {
-        session.accessToken = tokenWithGithub.accessToken
+
+      return enhancedToken
+    },
+    async session({ session, token }) {
+      // Expose all token data in the session
+      const enhancedToken = token as typeof token & { 
+        githubProfileUrl?: string
+        githubUsername?: string
+        accessToken?: string
+        vercelAccessToken?: string
       }
-      if (tokenWithGithub.vercelAccessToken && typeof tokenWithGithub.vercelAccessToken === "string") {
-        session.vercelAccessToken = tokenWithGithub.vercelAccessToken
+      
+      // Only update fields that exist and are strings
+      if (enhancedToken.githubProfileUrl && typeof enhancedToken.githubProfileUrl === "string") {
+        session.user.githubProfileUrl = enhancedToken.githubProfileUrl
       }
+      if (enhancedToken.githubUsername && typeof enhancedToken.githubUsername === "string") {
+        session.user.githubUsername = enhancedToken.githubUsername
+      }
+      if (enhancedToken.accessToken && typeof enhancedToken.accessToken === "string") {
+        session.accessToken = enhancedToken.accessToken
+      }
+      if (enhancedToken.vercelAccessToken && typeof enhancedToken.vercelAccessToken === "string") {
+        session.vercelAccessToken = enhancedToken.vercelAccessToken
+      }
+      
       return session
     },
   },
