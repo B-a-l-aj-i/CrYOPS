@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
             type: 'github'
           },
           buildCommand: 'pnpm run build',
-          installCommand: 'npm install',
+          installCommand: 'pnpm install',
           outputDirectory: 'dist',
         }
       });
