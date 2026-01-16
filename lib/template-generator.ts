@@ -482,6 +482,7 @@ export interface GitHubData {
   bestRepo: SanitizedRepo | null;
   mostActiveRepoThisMonth: SanitizedRepo | null;
   activelyMaintainedRepos: SanitizedRepo[];
+  topActivelyUsedRepos: SanitizedRepo[];
 }
 `,
   });
@@ -634,7 +635,7 @@ function generateGitHubStatsComponent(): string {
   CardTitle,
   CardDescription,
 } from "./ui/card"
-import type { GitHubData } from "../types"
+import type { GitHubData, SanitizedRepo } from "../types"
 
 interface GitHubStatsProps {
   data: GitHubData
@@ -648,7 +649,6 @@ export function GitHubStats({ data }: GitHubStatsProps) {
     activelyMaintainedRepos,
     totalStars,
     bestRepo,
-    sanitizedReposData,
     topActivelyUsedRepos,
   } = data
 
@@ -974,7 +974,7 @@ export function GitHubStats({ data }: GitHubStatsProps) {
           {/* Top 6 Actively Used Repos */}
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-slate-800">Active Repos</h3>
-            {topActivelyUsedRepos.map((repo, index) => (
+            {topActivelyUsedRepos.map((repo: SanitizedRepo, index: number) => (
               <Card key={index} className="bg-slate-50">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
