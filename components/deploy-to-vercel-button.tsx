@@ -51,7 +51,6 @@ export function DeployToVercelButton({
 
   const handleTokenSet = () => {
     setShowTokenInput(false);
-    // Auto-deploy after token is set (if we have a repo URL)
     if (githubRepoUrl) {
       // Small delay to ensure token is stored
       setTimeout(() => {
