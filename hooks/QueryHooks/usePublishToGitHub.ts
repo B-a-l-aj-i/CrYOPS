@@ -31,7 +31,7 @@ async function publishToGitHub({
   githubData,
 }: PublishToGitHubParams): Promise<PublishToGitHubResponse> {
   return postSuccessApi<PublishToGitHubResponse["data"]>(
-    "/api/deploy",
+    "/api/github/publish",
     { githubData }
   );
 }

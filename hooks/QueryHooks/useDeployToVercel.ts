@@ -33,7 +33,7 @@ async function deployToVercel({
   githubRepoUrl,
   vercelPat,
 }: DeployToVercelParams): Promise<DeployToVercelResponse> {
-  return postSuccessApi<DeployToVercelResponse["data"]>("/api/deploy-vercel", {
+  return postSuccessApi<DeployToVercelResponse["data"]>("/api/vercel/deploy", {
     githubRepoUrl,
     vercelPat,
   });

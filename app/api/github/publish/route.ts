@@ -2,7 +2,6 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { generateTemplate } from "@/lib/template-generator";
 import { createGitHubRepo, uploadFilesToRepo, repoExists } from "@/lib/github-repo-service";
-import { GitHubData } from "@/app/store";
 
 export async function POST(request: NextRequest) {
   try {
@@ -60,6 +59,7 @@ export async function POST(request: NextRequest) {
     // Check if repo already exists
     const exists = await repoExists(session.accessToken, username, repoName);
     if (exists) {
+      console.error(`Repository ${repoName} already exists. Please delete it first or use a different name.`);
       return Response.json(
         {
           success: false,
@@ -100,6 +100,7 @@ export async function POST(request: NextRequest) {
         console.log(`Uploaded ${current}/${total} files`);
       }
     );
+    console.log(`Uploaded ${uploadedCount} files to repository ${repoName}`);
 
     return Response.json({
       success: true,
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
     return Response.json(
       {
         success: false,
-        error: errorMessage,
+        error: "An error occurred while deploying the repository. Please try again.",
       },
       { status: 500 }
     );
