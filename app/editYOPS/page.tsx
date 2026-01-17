@@ -122,16 +122,6 @@ export default function EditYOPSPage() {
                 {/* View deployed links */}
                 {repoUrl && (
                   <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                    <a href={repoUrl.startsWith('http') ? repoUrl : `https://${repoUrl}`} target="_blank" rel="noopener noreferrer" className="cursor-pointer">  
-                    <Button
-                      variant="outline"
-                      className="cursor-pointer"
-                    >
-                      <Github className="h-4 w-4 mr-2" />
-                      View Repository
-                    </Button>
-                    </a>
-                    
                     {vercelUrl && (
                       <a href={vercelUrl.startsWith('http') ? vercelUrl : `https://${vercelUrl}`} target="_blank" rel="noopener noreferrer" className="cursor-pointer">  
                       <Button
@@ -143,6 +133,18 @@ export default function EditYOPSPage() {
                       </Button>
                     </a>
                     )}
+                    
+                    <a href={repoUrl.startsWith('http') ? repoUrl : `https://${repoUrl}`} target="_blank" rel="noopener noreferrer" className="cursor-pointer">  
+                    <Button
+                      variant="outline"
+                      className="cursor-pointer"
+                    >
+                      <Github className="h-4 w-4 mr-2" />
+                      View Repository
+                    </Button>
+                    </a>
+                    
+                    
                   </div>
                 )}
               </div>
