@@ -1,41 +1,38 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { ExternalLink, Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { useDeploymentStore, useVercelTokenStore } from "@/app/store";
+import { useVercelTokenStore } from "@/app/store";
 import { VercelTokenInput } from "./vercel-token-input";
+import { useDeployToVercel } from "@/hooks/QueryHooks/useDeployToVercel";
+import type { DeployToVercelResponse } from "@/hooks/QueryHooks/useDeployToVercel";
 
 interface DeployToVercelButtonProps {
   githubRepoUrl: string;
-  onDeploymentComplete?: (deployment: any) => void;
+  onDeploymentComplete?: (deployment: DeployToVercelResponse["data"]) => void;
 }
 
-export function DeployToVercelButton({ githubRepoUrl, onDeploymentComplete }: DeployToVercelButtonProps) {
-  const [isDeploying, setIsDeploying] = useState(false);
-  const [deployStatus, setDeployStatus] = useState<{
-    type: "success" | "error" | null;
-    message: string;
-    vercelUrl?: string;
-  }>({ type: null, message: "" });
+export function DeployToVercelButton({
+  githubRepoUrl,
+  onDeploymentComplete,
+}: DeployToVercelButtonProps) {
   const [showTokenInput, setShowTokenInput] = useState(false);
-  
-  const {
-    vercelUrl: savedVercelUrl,
-    setVercelDeployed,
-  } = useDeploymentStore();
+  const { vercelToken: storedToken } = useVercelTokenStore();
 
-  const {
-    vercelToken: storedToken,
-  } = useVercelTokenStore();
+  const deployMutation = useDeployToVercel({
+    onSuccess: (data) => {
+      if (onDeploymentComplete && data.data) {
+        onDeploymentComplete(data.data);
+      }
+    },
+    onError: (error) => {
+      console.error("Vercel deployment error:", error);
+    },
+  });
 
-  const handleVercelDeploy = useCallback(async () => {
-    console.log("handleVercelDeploy", githubRepoUrl, storedToken);
+  const handleVercelDeploy = () => {
     if (!githubRepoUrl) {
-      setDeployStatus({
-        type: "error",
-        message: "No GitHub repository found. Please publish to GitHub first.",
-      });
       return;
     }
 
@@ -45,65 +42,47 @@ export function DeployToVercelButton({ githubRepoUrl, onDeploymentComplete }: De
       return;
     }
 
-    setIsDeploying(true);
-    setDeployStatus({ type: null, message: "" });
+    // Trigger React Query mutation
+    deployMutation.mutate({
+      githubRepoUrl,
+      vercelPat: storedToken,
+    });
+  };
 
-    try {
-      const response = await fetch("/api/deploy-vercel", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          githubRepoUrl,
-          vercelPat: storedToken,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        // Save Vercel deployment info
-        setVercelDeployed(result.data.vercelDeployment.url);
-        
-        setDeployStatus({
-          type: "success",
-          message: result.data.message || "Portfolio successfully deployed to Vercel! Your site is now live!",
-          vercelUrl: result.data.vercelDeployment.url,
-        });
-
-        // Notify parent component
-        if (onDeploymentComplete) {
-          onDeploymentComplete(result.data);
-        }
-      } else {
-        setDeployStatus({
-          type: "error",
-          message: result.error || "Failed to deploy to Vercel",
-        });
-      }
-    } catch (error) {
-      console.error("Vercel deployment error:", error);
-      setDeployStatus({
-        type: "error",
-        message: "An error occurred while deploying to Vercel. Please try again.",
-      });
-    } finally {
-      setIsDeploying(false);
-    }
-  }, [githubRepoUrl, storedToken]);
-
-  const handleTokenSet = (token: string) => {
+  const handleTokenSet = () => {
     setShowTokenInput(false);
-    // Immediately trigger deployment after token is set
-    setTimeout(() => {
-      handleVercelDeploy();
-    }, 100);
+    // Auto-deploy after token is set (if we have a repo URL)
+    if (githubRepoUrl) {
+      // Small delay to ensure token is stored
+      setTimeout(() => {
+        handleVercelDeploy();
+      }, 100);
+    }
   };
 
   const handleTokenCancel = () => {
     setShowTokenInput(false);
   };
+
+  // Derive status from React Query mutation state
+  const isDeploying = deployMutation.isPending;
+  const deployStatus = deployMutation.isSuccess
+    ? {
+        type: "success" as const,
+        message:
+          deployMutation.data?.data?.message ||
+          "Portfolio successfully deployed to Vercel! Your site is now live!",
+        vercelUrl: deployMutation.data?.data?.vercelDeployment.url,
+      }
+    : deployMutation.isError
+    ? {
+        type: "error" as const,
+        message:
+          deployMutation.error?.message ||
+          "An error occurred while deploying to Vercel. Please try again.",
+        vercelUrl: undefined,
+      }
+    : null;
 
  return (
     <div className="flex flex-col items-center gap-4">
@@ -178,7 +157,7 @@ export function DeployToVercelButton({ githubRepoUrl, onDeploymentComplete }: De
       )}
 
       {/* Deployment Status */}
-      {deployStatus.type && (
+      {deployStatus && (
         <div
           className={`w-full max-w-md p-4 rounded-lg border ${
             deployStatus.type === "success"
@@ -199,7 +178,7 @@ export function DeployToVercelButton({ githubRepoUrl, onDeploymentComplete }: De
                   href={deployStatus.vercelUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm underline mt-1 inline-block flex items-center gap-1 text-blue-600"
+                  className="text-sm underline mt-1 flex items-center gap-1 text-blue-600"
                 >
                   <ExternalLink className="h-3 w-3" />
                   View live site →

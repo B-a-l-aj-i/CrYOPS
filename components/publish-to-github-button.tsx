@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { Button } from "./ui/button";
 import { GithubIcon, Loader2, CheckCircle2, XCircle } from "lucide-react";
-import { useDeploymentStore } from "@/app/store";
+import { usePublishToGitHub } from "@/hooks/QueryHooks/usePublishToGitHub";
 import type { GitHubData } from "@/app/store";
 
 interface PublishToGitHubButtonProps {
@@ -13,16 +12,14 @@ interface PublishToGitHubButtonProps {
 
 export function PublishToGitHubButton({ portfolioData }: PublishToGitHubButtonProps) {
   const { data: session, status } = useSession();
-  const { setGithubDeployed } = useDeploymentStore();
   
-  const [isDeploying, setIsDeploying] = useState(false);
-  const [deployStatus, setDeployStatus] = useState<{
-    type: "success" | "error" | null;
-    message: string;
-    repoUrl?: string;
-  }>({ type: null, message: "" });
+  const publishMutation = usePublishToGitHub({
+    onError: (error) => {
+      console.error("GitHub deployment error:", error);
+    },
+  });
 
-  const handlePublish = useCallback(async () => {
+  const handlePublish = () => {
     // Check authentication first
     if (status !== "authenticated" || !session?.accessToken) {
       // Trigger GitHub sign in
@@ -30,54 +27,33 @@ export function PublishToGitHubButton({ portfolioData }: PublishToGitHubButtonPr
       return;
     }
 
-    setIsDeploying(true);
-    setDeployStatus({ type: null, message: "" });
+    // Trigger React Query mutation
+    publishMutation.mutate({ githubData: portfolioData });
+  };
 
-    try {
-      // Deploy portfolio to GitHub
-      const response = await fetch("/api/deploy", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          githubData: portfolioData,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        // Save GitHub deployment info
-        setGithubDeployed(result.data.repo.html_url);
-        
-        setDeployStatus({
-          type: "success",
-          message: "Portfolio successfully published to GitHub! Ready for Vercel deployment.",
-          repoUrl: result.data.repo.html_url,
-        });
-      } else {
-        setDeployStatus({
-          type: "error",
-          message: result.error || "Failed to publish to GitHub",
-        });
+  // Derive status from React Query mutation state
+  const isDeploying = publishMutation.isPending;
+  const deployStatus = publishMutation.isSuccess
+    ? {
+        type: "success" as const,
+        message: "Portfolio successfully published to GitHub! Ready for Vercel deployment.",
+        repoUrl: publishMutation.data?.data?.repo.html_url,
       }
-    } catch (error) {
-      console.error("GitHub deployment error:", error);
-      setDeployStatus({
-        type: "error",
-        message: "An error occurred while publishing to GitHub. Please try again.",
-      });
-    } finally {
-      setIsDeploying(false);
-    }
-  }, [portfolioData, status, session, setGithubDeployed]);
+    : publishMutation.isError
+    ? {
+        type: "error" as const,
+        message:
+          publishMutation.error?.message ||
+          "An error occurred while publishing to GitHub. Please try again.",
+        repoUrl: undefined,
+      }
+    : null;
 
   const githubButtonDisabled = isDeploying;
 
   return (
     <div className="flex flex-col items-center gap-4">
-      {deployStatus.type && (
+      {deployStatus && (
         <div
           className={`w-full max-w-md p-4 rounded-lg border ${
             deployStatus.type === "success"

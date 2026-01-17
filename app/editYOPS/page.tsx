@@ -1,47 +1,37 @@
 'use client'
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGithubStore, useDeploymentStore } from "../store";
-import { GitHubData } from "../store";
 import { Card, CardContent } from "@/components/ui/card";
 import { PublishToGitHubButton } from "@/components/publish-to-github-button";
 import { DeployToVercelButton } from "@/components/deploy-to-vercel-button";
 import About from "@/components/about";
 import { AlertCircle, Github, ExternalLink, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function EditYOPSPage() {
   const router = useRouter();
-  const [portfolioData, setPortfolioData] = useState<GitHubData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Get stores
-  const githubData = useGithubStore((state) => state.githubData); 
+  
+  const githubData = useGithubStore((state) => state.githubData);
+  const hasHydrated = useGithubStore((state) => state._hasHydrated);
   
   // Deployment state
   const { isGithubDeployed, repoUrl, vercelUrl } = useDeploymentStore();
 
-  useEffect(() => {
-    // Determine which data to use
-    if (githubData) {
-      setPortfolioData(githubData);
-    }
-    setLoading(false);
-  }, [githubData, setPortfolioData, setLoading]);
-
-  if (loading) {
+  // Show loading while store is hydrating from localStorage
+  if (!hasHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <Spinner size="lg" className="mx-auto mb-4 text-primary" />
           <p className="text-muted-foreground">Loading your portfolio...</p>
         </div>
       </div>
     );
   }
 
-  if (!portfolioData) {
+  if (!githubData) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
         <div className="text-center max-w-md">
@@ -103,7 +93,7 @@ export default function EditYOPSPage() {
 
       {/* Portfolio content */}
       <main>
-        <About githubData={portfolioData} />
+        <About githubData={githubData} />
       </main>
 
       {/* Deployment controls */}
@@ -120,7 +110,7 @@ export default function EditYOPSPage() {
                 {/* GitHub Publish Button */}
                 {!isGithubDeployed && (
                   <PublishToGitHubButton 
-                    portfolioData={portfolioData}
+                    portfolioData={githubData}
                   />
                 )}
 

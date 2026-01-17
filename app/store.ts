@@ -36,8 +36,10 @@ export const useLeetCodeStore = create<LeetCodeStore>()(
 interface GithubStore {
     githubUrl: string;
     githubData: GitHubData | null;
+    _hasHydrated: boolean;
     setGithubUrl: (githubUrl: string) => void;
     setGithubData: (githubData: GitHubData) => void;
+    setHasHydrated: (hasHydrated: boolean) => void;
   }
 
 export const useGithubStore = create<GithubStore>()(
@@ -45,8 +47,10 @@ export const useGithubStore = create<GithubStore>()(
     (set) => ({
       githubUrl: "",
       githubData: null,
+      _hasHydrated: false,
       setGithubUrl: (githubUrl: string) => set({ githubUrl }),
       setGithubData: (githubData: GitHubData) => set({ githubData }),
+      setHasHydrated: (hasHydrated: boolean) => set({ _hasHydrated: hasHydrated }),
     }),
     {
       name: "github-portfolio-data",
@@ -54,7 +58,12 @@ export const useGithubStore = create<GithubStore>()(
       partialize: (state) => ({
         githubUrl: state.githubUrl,
         githubData: state.githubData,
+        // Don't persist _hasHydrated - it's ephemeral
       }),
+      onRehydrateStorage: () => (state) => {
+        // Mark as hydrated after rehydration completes
+        state?.setHasHydrated(true);
+      },
     }
   )
 );
