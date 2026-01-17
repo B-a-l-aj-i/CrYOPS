@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { ExternalLink, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useVercelTokenStore } from "@/app/store";
 
@@ -32,6 +33,24 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
   const effectiveToken = _hasHydrated 
     ? (storedToken || envToken)
     : undefined;
+
+  const handleCancel = () => {
+    setToken("");
+    setValidationError("");
+    setShowToken(false);
+    if (onCancel) {
+      onCancel();
+    }
+  };
+
+  // Handle ESC key to close
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape" && onCancel) {
+      console.log("Escape key pressed");
+      e.preventDefault();
+      handleCancel();
+    }
+  };
 
   const validateToken = (tokenValue: string): { isValid: boolean; error: string } => {
     if (!tokenValue.trim()) {
@@ -77,15 +96,6 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
     }
   };
 
-  const handleCancel = () => {
-    setToken("");
-    setValidationError("");
-    setShowToken(false);
-    if (onCancel) {
-      onCancel();
-    }
-  };
-
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "Never";
     const date = new Date(dateString);
@@ -93,126 +103,147 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
   };
 
   return (
-    <div className="space-y-4 p-6 border rounded-lg bg-background">
-      {/* Instructions */}
-      {showInstructions && (
-        <div className="space-y-3">
-          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
-            <div className="text-sm text-blue-800">
-              <h4 className="font-semibold mb-2">How to get your Vercel Personal Access Token:</h4>
-              <ol className="list-decimal list-inside space-y-1 text-blue-700">
-                <li>Visit <a href="https://vercel.com/account/tokens" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">vercel.com/account/tokens</a></li>
-                <li>Click &quot;Create Token&quot;</li>
-                <li>Give your token a name (e.g., &quot;CrYOPS Integration&quot;)</li>
-                <li>Copy the generated token</li>
-                <li>Paste it in the field below</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Current Status */}
-      {effectiveToken && (
-        <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-green-600" />
-            <span className="text-sm text-green-800 font-medium">
-              Vercel Connected
-              {!storedToken && envToken && (
-                <span className="text-xs text-green-600 ml-2">(using environment variable)</span>
-              )}
-            </span>
-          </div>
-          {storedToken && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => clearVercelToken()}
-              className="text-green-600 hover:text-green-700"
-            >
-              Disconnect
-            </Button>
+    <div 
+      onKeyDown={handleKeyDown}
+      className="space-y-4"
+    >
+      <Card>
+        <CardContent className="pt-6">
+          {/* Instructions */}
+          {showInstructions && (
+            <Card className="mb-4 border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <AlertCircle className="h-5 w-5 text-blue-600 shrink-0" />
+                  How to get your Vercel Personal Access Token
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-700">
+                  <li>Visit <a href="https://vercel.com/account/tokens" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">vercel.com/account/tokens</a></li>
+                  <li>Click &quot;Create Token&quot;</li>
+                  <li>Give your token a name (e.g., &quot;CrYOPS Integration&quot;)</li>
+                  <li>Copy the generated token</li>
+                  <li>Paste it in the field below</li>
+                </ol>
+              </CardContent>
+            </Card>
           )}
-        </div>
-      )}
 
-      {/* Token Created Date */}
-      {storedToken && tokenCreated && (
-        <div className="text-xs text-muted-foreground text-center">
-          Token added on {formatDate(tokenCreated)}
-        </div>
-      )}
-
-      {/* Token Input Form */}
-      {!effectiveToken && (
-        <div className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="vercel-token">Vercel Personal Access Token</Label>
-            <div className="relative">
-              <Input
-                id="vercel-token"
-                type={showToken ? "text" : "password"}
-                placeholder="vercel_xxxxxxxxxxxxxxxx"
-                value={token}
-                onChange={(e) => setToken(e.target.value)}
-                className="font-mono text-sm"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowToken(!showToken)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
-              >
-                {showToken ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
+          {/* Current Status */}
+          {effectiveToken && (
+            <Card className="mb-4 border-green-200 bg-green-50">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-green-800 font-medium">
+                      Vercel Connected
+                      {!storedToken && envToken && (
+                        <span className="text-xs text-green-600 ml-2">(using environment variable)</span>
+                      )}
+                    </span>
+                  </div>
+                  {storedToken && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => clearVercelToken()}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      Disconnect
+                    </Button>
+                  )}
+                </div>
+                {/* Token Created Date */}
+                {storedToken && tokenCreated && (
+                  <div className="text-xs text-muted-foreground text-center mt-2">
+                    Token added on {formatDate(tokenCreated)}
+                  </div>
                 )}
-              </Button>
-            </div>
-          </div>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Validation Error */}
-          {validationError && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
-              <span className="text-sm text-red-700">{validationError}</span>
+          {/* Token Input Form */}
+          {!effectiveToken && (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="vercel-token">Vercel Personal Access Token</Label>
+                <div className="relative">
+                  <Input
+                    id="vercel-token"
+                    type={showToken ? "text" : "password"}
+                    placeholder="vercel_xxxxxxxxxxxxxxxx"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape" && onCancel) {
+                        handleCancel();
+                      }
+                    }}
+                    className="font-mono text-sm"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowToken(!showToken)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 p-0"
+                  >
+                    {showToken ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Validation Error */}
+              {validationError && (
+                <Card className="border-red-200 bg-red-50">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+                      <span className="text-sm text-red-700">{validationError}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  disabled={isValidating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveToken}
+                  disabled={isValidating || !token.trim()}
+                  className="min-w-[120px]"
+                >
+                  {isValidating ? "Saving..." : "Save Token"}
+                </Button>
+              </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isValidating}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveToken}
-              disabled={isValidating || !token.trim()}
-              className="min-w-[120px]"
-            >
-              {isValidating ? "Saving..." : "Save Token"}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Additional Info */}
-      <div className="text-xs text-muted-foreground space-y-1">
-        <p className="flex items-center gap-1">
-          <ExternalLink className="h-3 w-3" />
-          Your token is stored locally and used to deploy projects to your Vercel account.
-        </p>
-        <p>
-          Learn more about <a href="https://vercel.com/docs/sign-in-with-vercel/tokens#access-token" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Vercel Personal Access Tokens</a>
-        </p>
-      </div>
+          {/* Additional Info */}
+          <CardDescription className="mt-4 space-y-1">
+            <p className="flex items-center gap-1 text-xs">
+              <ExternalLink className="h-3 w-3" />
+              Your token is stored locally and used to deploy projects to your Vercel account.
+            </p>
+            <p className="text-xs">
+              Learn more about <a href="https://vercel.com/docs/sign-in-with-vercel/tokens#access-token" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Vercel Personal Access Tokens</a>
+            </p>
+          </CardDescription>
+        </CardContent>
+      </Card>
     </div>
   );
 }
