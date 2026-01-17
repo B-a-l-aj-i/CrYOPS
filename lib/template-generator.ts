@@ -15,7 +15,7 @@ export function generateTemplate(githubData: GitHubData, username: string): Temp
   files.push({
     path: "package.json",
     content: JSON.stringify({
-      "name": `${username}'s portfolio`,
+      "name": `cryops-portfolio-${username}`,
       "private": true,
       "version": "0.1.0",
       "type": "module",
