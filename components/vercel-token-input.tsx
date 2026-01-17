@@ -46,7 +46,6 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
   // Handle ESC key to close
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape" && onCancel) {
-      console.log("Escape key pressed");
       e.preventDefault();
       handleCancel();
     }
