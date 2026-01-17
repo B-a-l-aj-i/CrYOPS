@@ -29,9 +29,8 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
   } = useVercelTokenStore();
 
   // Get token from store (hydrated) or environment variable
-  const envToken = typeof window !== "undefined" ? process.env.VERCEL_PERSONAL_ACCESS_TOKEN : undefined;
   const effectiveToken = _hasHydrated 
-    ? (storedToken || envToken)
+    ? (storedToken)
     : undefined;
 
   const handleCancel = () => {
@@ -137,9 +136,6 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
                     <span className="text-sm text-green-800 font-medium">
                       Vercel Connected
-                      {!storedToken && envToken && (
-                        <span className="text-xs text-green-600 ml-2">(using environment variable)</span>
-                      )}
                     </span>
                   </div>
                   {storedToken && (
