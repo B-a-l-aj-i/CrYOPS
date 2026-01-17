@@ -29,7 +29,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
   } = useVercelTokenStore();
 
   // Get token from store (hydrated) or environment variable
-  const envToken = typeof window !== "undefined" ? process.env.NEXT_PUBLIC_VERCEL_PERSONAL_ACCESS_TOKEN : undefined;
+  const envToken = typeof window !== "undefined" ? process.env.VERCEL_PERSONAL_ACCESS_TOKEN : undefined;
   const effectiveToken = _hasHydrated 
     ? (storedToken || envToken)
     : undefined;
