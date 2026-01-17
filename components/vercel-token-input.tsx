@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
-import { ExternalLink, CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { CheckCircle2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useVercelTokenStore } from "@/app/store";
 
 interface VercelTokenInputProps {
@@ -107,22 +107,21 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
       onKeyDown={handleKeyDown}
       className="space-y-4"
     >
-      <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-1 text-left">
           {/* Instructions */}
           {showInstructions && (
-            <Card className="mb-4 border-blue-200 bg-blue-50">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-blue-800">
+            <Card className="mb-4 border-blue-200 bg-blue-50 text-left">
+              <CardHeader className="text-left">
+                <CardTitle className="flex items-center gap-2 text-blue-800 text-left">
                   <AlertCircle className="h-5 w-5 text-blue-600 shrink-0" />
                   How to get your Vercel Personal Access Token
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-700">
+              <CardContent className="text-left">
+                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-700 text-left">
                   <li>Visit <a href="https://vercel.com/account/tokens" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">vercel.com/account/tokens</a></li>
                   <li>Click &quot;Create Token&quot;</li>
-                  <li>Give your token a name (e.g., &quot;CrYOPS Integration&quot;)</li>
+                  <li>Give your token a name scope and expiration(no expiration is recommended)</li>
                   <li>Copy the generated token</li>
                   <li>Paste it in the field below</li>
                 </ol>
@@ -132,8 +131,8 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
 
           {/* Current Status */}
           {effectiveToken && (
-            <Card className="mb-4 border-green-200 bg-green-50">
-              <CardContent className="pt-6">
+            <Card className="mb-4 border-green-200 bg-green-50 text-left">
+              <CardContent className="pt-6 text-left">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -157,7 +156,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
                 </div>
                 {/* Token Created Date */}
                 {storedToken && tokenCreated && (
-                  <div className="text-xs text-muted-foreground text-center mt-2">
+                  <div className="text-xs text-muted-foreground text-left mt-2">
                     Token added on {formatDate(tokenCreated)}
                   </div>
                 )}
@@ -174,7 +173,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
                   <Input
                     id="vercel-token"
                     type={showToken ? "text" : "password"}
-                    placeholder="vercel_xxxxxxxxxxxxxxxx"
+                    placeholder="xxxxxxxxxxxxxxxx"
                     value={token}
                     onChange={(e) => setToken(e.target.value)}
                     onKeyDown={(e) => {
@@ -202,8 +201,8 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
 
               {/* Validation Error */}
               {validationError && (
-                <Card className="border-red-200 bg-red-50">
-                  <CardContent className="pt-6">
+                <Card className="border-red-200 bg-red-50 text-left">
+                  <CardContent className="pt-6 text-left">
                     <div className="flex items-center gap-2">
                       <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
                       <span className="text-sm text-red-700">{validationError}</span>
@@ -233,17 +232,12 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
           )}
 
           {/* Additional Info */}
-          <CardDescription className="mt-4 space-y-1">
-            <p className="flex items-center gap-1 text-xs">
-              <ExternalLink className="h-3 w-3" />
-              Your token is stored locally and used to deploy projects to your Vercel account.
-            </p>
-            <p className="text-xs">
+          <CardDescription className="mt-4 space-y-1 text-left">
+            <p className="text-xs text-left">
               Learn more about <a href="https://vercel.com/docs/sign-in-with-vercel/tokens#access-token" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Vercel Personal Access Tokens</a>
             </p>
           </CardDescription>
         </CardContent>
-      </Card>
     </div>
   );
 }
