@@ -118,24 +118,10 @@ export async function POST(request: NextRequest) {
     } catch (deploymentError) {
       console.error("Vercel deployment error:", deploymentError);
 
-      // Return detailed error information
-      let errorMessage = "Failed to deploy to Vercel";
-      if (deploymentError instanceof Error) {
-        errorMessage = deploymentError.message;
-      }
-
       return Response.json(
         {
           success: false,
-          error: errorMessage,
-          details:
-            deploymentError instanceof Error
-              ? {
-                  name: deploymentError.name,
-                  message: deploymentError.message,
-                  stack: deploymentError.stack,
-                }
-              : "Unknown error occurred",
+          error: "An error occurred while deploying to Vercel. Please try again.",
         },
         { status: 500 }
       );
