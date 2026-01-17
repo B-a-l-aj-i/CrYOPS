@@ -118,9 +118,11 @@ export interface GitHubData {
 interface VercelTokenStore {
   vercelToken: string | null;
   tokenCreated: string | null;
+  _hasHydrated: boolean;
   setVercelToken: (token: string) => void;
   setTokenCreated: (date: string) => void;
   clearVercelToken: () => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 }
 
 interface DeploymentStore {
@@ -144,6 +146,7 @@ export const useVercelTokenStore = create<VercelTokenStore>()(
     (set) => ({
       vercelToken: null,
       tokenCreated: null,
+      _hasHydrated: false,
       setVercelToken: (token) => set({ 
         vercelToken: token,
         tokenCreated: new Date().toISOString()
@@ -153,10 +156,20 @@ export const useVercelTokenStore = create<VercelTokenStore>()(
         vercelToken: null, 
         tokenCreated: null 
       }),
+      setHasHydrated: (hasHydrated: boolean) => set({ _hasHydrated: hasHydrated }),
     }),
     {
       name: "vercel-token-storage",
       storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        vercelToken: state.vercelToken,
+        tokenCreated: state.tokenCreated,
+        // Don't persist _hasHydrated - it's ephemeral
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Mark as hydrated after rehydration completes
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

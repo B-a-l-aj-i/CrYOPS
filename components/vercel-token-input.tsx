@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -22,15 +22,16 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
   const {
     vercelToken: storedToken,
     tokenCreated,
+    _hasHydrated,
     setVercelToken,
     clearVercelToken
   } = useVercelTokenStore();
 
-  useEffect(() => {
-    if (storedToken) {
-      setToken(storedToken);
-    }
-  }, [storedToken]);
+  // Get token from store (hydrated) or environment variable
+  const envToken = typeof window !== "undefined" ? process.env.NEXT_PUBLIC_VERCEL_PERSONAL_ACCESS_TOKEN : undefined;
+  const effectiveToken = _hasHydrated 
+    ? (storedToken || envToken)
+    : undefined;
 
   const validateToken = (tokenValue: string): { isValid: boolean; error: string } => {
     if (!tokenValue.trim()) {
@@ -70,7 +71,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
       if (onTokenSet) {
         onTokenSet(token);
       }
-    } catch (error) {
+    } catch {
       setValidationError("Failed to save token. Please try again.");
       setIsValidating(false);
     }
@@ -97,13 +98,13 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
       {showInstructions && (
         <div className="space-y-3">
           <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
             <div className="text-sm text-blue-800">
               <h4 className="font-semibold mb-2">How to get your Vercel Personal Access Token:</h4>
               <ol className="list-decimal list-inside space-y-1 text-blue-700">
                 <li>Visit <a href="https://vercel.com/account/tokens" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">vercel.com/account/tokens</a></li>
-                <li>Click "Create Token"</li>
-                <li>Give your token a name (e.g., "CrYOPS Integration")</li>
+                <li>Click &quot;Create Token&quot;</li>
+                <li>Give your token a name (e.g., &quot;CrYOPS Integration&quot;)</li>
                 <li>Copy the generated token</li>
                 <li>Paste it in the field below</li>
               </ol>
@@ -113,22 +114,27 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
       )}
 
       {/* Current Status */}
-      {storedToken && (
+      {effectiveToken && (
         <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-green-600" />
             <span className="text-sm text-green-800 font-medium">
               Vercel Connected
+              {!storedToken && envToken && (
+                <span className="text-xs text-green-600 ml-2">(using environment variable)</span>
+              )}
             </span>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => clearVercelToken()}
-            className="text-green-600 hover:text-green-700"
-          >
-            Disconnect
-          </Button>
+          {storedToken && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => clearVercelToken()}
+              className="text-green-600 hover:text-green-700"
+            >
+              Disconnect
+            </Button>
+          )}
         </div>
       )}
 
@@ -140,7 +146,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
       )}
 
       {/* Token Input Form */}
-      {!storedToken && (
+      {!effectiveToken && (
         <div className="space-y-3">
           <div className="space-y-2">
             <Label htmlFor="vercel-token">Vercel Personal Access Token</Label>
@@ -172,7 +178,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
           {/* Validation Error */}
           {validationError && (
             <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0" />
+              <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
               <span className="text-sm text-red-700">{validationError}</span>
             </div>
           )}
@@ -204,7 +210,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
           Your token is stored locally and used to deploy projects to your Vercel account.
         </p>
         <p>
-          Learn more about <a href="https://vercel.com/docs/concepts/personal-access-tokens" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Vercel Personal Access Tokens</a>
+          Learn more about <a href="https://vercel.com/docs/sign-in-with-vercel/tokens#access-token" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Vercel Personal Access Tokens</a>
         </p>
       </div>
     </div>

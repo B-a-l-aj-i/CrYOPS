@@ -102,15 +102,8 @@ export function DeployToVercelButton({
         </div>
       )}
 
-      {/* Deploy Button */}
-      {!showTokenInput && (
-        <>
-          {storedToken && (
-            <div className="text-xs text-green-600 text-center mb-2">
-              ✓ Vercel token ready
-            </div>
-          )}
-
+      {
+        !showTokenInput && storedToken && (
           <Button
             onClick={handleVercelDeploy}
             variant="outline"
@@ -123,20 +116,15 @@ export function DeployToVercelButton({
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Deploying...
               </>
-            ) : !storedToken ? (
-              <>
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Connect Vercel for Live URL
-              </>
-            ) : (
+            ) :(
               <>
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Deploy to Vercel
               </>
             )}
           </Button>
-        </>
-      )}
+        )
+      }
 
       {/* Instructions when no token */}
       {!storedToken && !showTokenInput && (
@@ -150,9 +138,6 @@ export function DeployToVercelButton({
             <ExternalLink className="h-4 w-4 mr-2" />
             Connect Vercel for Live URL
           </Button>
-          <p className="text-xs text-muted-foreground text-center max-w-md mt-2">
-            Enter your Vercel Personal Access Token to deploy to your Vercel account
-          </p>
         </div>
       )}
 
