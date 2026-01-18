@@ -54,12 +54,3 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = "Button"
 
 export { Button, buttonVariants }
-
-export function ButtonLoading({props}: {props: {isLoading: boolean}}) {
-  const { isLoading } = props
-  return (
-    <Button size="sm" variant="outline" disabled={isLoading}>
-      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "validate"}
-    </Button>
-  )
-} 

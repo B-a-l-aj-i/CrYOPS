@@ -2,26 +2,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { GithubIcon, CodeIcon, GlobeIcon, Loader2 } from "lucide-react";
-import { GitHubData, LeetCodeData } from "@/app/store";
+import { GithubIcon, GlobeIcon, Loader2 } from "lucide-react";
+import { GitHubData } from "@/app/store";
 import { GitHubStats } from "@/components/githubStats";
 import { GitHubCalendar } from "react-github-calendar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 
 interface AboutProps {
   githubData: GitHubData | null;
-  // leetCodeData: LeetCodeData | null;
 }
 
-export default function About({ githubData /* , leetCodeData */ }: AboutProps) {
-
-  if (!githubData /* || !leetCodeData */) {
+export default function About({ githubData }: AboutProps) {
+  if (!githubData) {
     return <div>Loading...</div>;
   }
 
@@ -30,11 +21,8 @@ export default function About({ githubData /* , leetCodeData */ }: AboutProps) {
     name: githubData.profile.name,
     bio: githubData.profile.bio,
     githubUrl: githubData.profileUrl,
-    // leetcodeUrl: leetCodeData.profileUrl,
     blog: githubData.profile.blog,
   };
-
-  const usersGitHubData: GitHubData | null = githubData;
 
   return (
     <div className="flex flex-col justify-center items-center py-12">
@@ -69,19 +57,9 @@ export default function About({ githubData /* , leetCodeData */ }: AboutProps) {
           GitHub
         </a>
 
-        {/* <a
-          href={profile.leetcodeUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="h-11 px-6 bg-blue-50 rounded-2xl border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 hover:shadow-sm transition-all duration-300"
-        >
-          <CodeIcon className="w-4 h-4" />
-          LeetCode
-        </a> */}
-
         {profile.blog && (
           <a
-            href={profile.blog}
+            href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`}
             target="_blank"
             rel="noopener noreferrer"
             className="h-11 px-6 bg-blue-50 rounded-2xl  border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 hover:shadow-sm transition-all duration-300"
@@ -94,12 +72,12 @@ export default function About({ githubData /* , leetCodeData */ }: AboutProps) {
 
       {/* GitHub Stats Dashboard */}
       <div className="w-full mt-12">
-        <GitHubStats data={usersGitHubData} />
+        <GitHubStats data={githubData} />
       </div>
 
       {/* GitHub Contribution Calendar */}
       <div className="w-full max-w-fit mx-auto px-4 mt-12">
-        <GitHubCalendarWrapper username={usersGitHubData.profile.username} />
+        <GitHubCalendarWrapper username={githubData.profile.username} />
       </div>
     </div>
   );

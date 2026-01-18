@@ -1,5 +1,3 @@
-"use client"
-
 import { Main } from "@/components/main"
 import { Profile } from "@/components/profile"
 import { Build } from "@/components/build"
