@@ -97,6 +97,7 @@ export function DeployToVercelButton({
         )}
         <DialogContent 
           className="max-w-md bg-white p-6" 
+          overlayClassName="bg-black/50 backdrop-blur-sm"
         > 
           <DialogHeader className="text-center">
             <DialogTitle className="text-lg font-semibold mb-4 text-center">Connect Vercel</DialogTitle>

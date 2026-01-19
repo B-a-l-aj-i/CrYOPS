@@ -162,8 +162,8 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
           {/* Token Input Form */}
           {!effectiveToken && (
             <div className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="vercel-token">Vercel Personal Access Token</Label>
+              <div className="space-y-4 mb">
+                <Label htmlFor="vercel-token" >Vercel Personal Access Token</Label>
                 <div className="relative">
                   <Input
                     id="vercel-token"
@@ -176,7 +176,7 @@ export function VercelTokenInput({ onTokenSet, onCancel, showInstructions = true
                         handleCancel();
                       }
                     }}
-                    className="font-mono text-sm"
+                    className="font-mono text-sm mt-2"
                   />
                   <Button
                     type="button"
