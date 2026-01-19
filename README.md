@@ -57,11 +57,10 @@
 Create a `.env.local` file with the following variables:
 
 ```env
-NEXTAUTH_SECRET=your-nextauth-secret
-NEXTAUTH_URL=http://localhost:3000
-GITHUB_CLIENT_ID=your-github-client-id
-GITHUB_CLIENT_SECRET=your-github-client-secret
-VERCEL_TOKEN=your-vercel-token
+GITHUB_ID=your-github-client-id
+GITHUB_SECRET=your-github-client-secret
+
+AUTH_SECRET=your-nextauth-secret
 ```
 
 ## 📁 Project Structure
