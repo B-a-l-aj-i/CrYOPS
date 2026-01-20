@@ -1,11 +1,17 @@
 import { NextRequest } from "next/server";
+import { githubValidateSchema } from "@/lib/validations/github";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const username = searchParams.get('username');
   
-  if (!username) {
-    return Response.json({ valid: false, error: "Username is required" }, { status: 400 });
+  // Validate with Zod
+  const validation = githubValidateSchema.safeParse({ username });
+  if (!validation.success) {
+    return Response.json(
+      { valid: false, error: validation.error.issues[0]?.message || "Validation failed" },
+      { status: 400 }
+    );
   }
   
   try {

@@ -17,6 +17,7 @@ import {
   type GitHubIssuesResponse,
 } from "@/lib/github/types";
 import { validateUserData } from "@/lib/github/helpers";
+import { githubGetDetailsSchema } from "@/lib/validations/github";
 
 
 const GITHUB_CONTRIBUTIONS_API =
@@ -30,17 +31,20 @@ export async function POST(request: NextRequest) {
   let username: string | null = null;
   try {
     const body = await request.json();
-    const { url } = body;
 
-    if (!url || typeof url !== "string") {
+    // Validate with Zod
+    const validation = githubGetDetailsSchema.safeParse(body);
+    if (!validation.success) {
       return Response.json(
         {
           success: false,
-          error: "GitHub URL is required",
+          error: validation.error.issues[0]?.message || "Validation failed",
         },
         { status: 400 }
       );
     }
+
+    const { url } = validation.data;
 
     // Extract username from URL
     username = extractUsernameFromUrl(url);

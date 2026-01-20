@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { Vercel } from "@vercel/sdk";
 import { auth } from "@/lib/auth";
+import { vercelDeploySchema } from "@/lib/validations/vercel";
 
 /**
  * Gets a user-friendly error message from an error
@@ -41,18 +42,21 @@ function getUserFriendlyError(error: unknown): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { githubRepoUrl, vercelPat } = body;
 
-    // Validate inputs
-    if (!githubRepoUrl) {
+    // Validate with Zod
+    const validation = vercelDeploySchema.safeParse(body);
+    if (!validation.success) {
       return Response.json(
         {
           success: false,
-          error: "GitHub repository URL is required",
+          error: validation.error.issues[0]?.message || "Validation failed",
         },
         { status: 400 }
       );
     }
+
+    const { githubRepoUrl, vercelPat } = validation.data;
+
     const session = await auth();
 
     if (!session?.accessToken) {
@@ -62,16 +66,6 @@ export async function POST(request: NextRequest) {
           error: "Not authenticated or missing GitHub access token",
         },
         { status: 401 }
-      );
-    }
-
-    if (!vercelPat) {
-      return Response.json(
-        {
-          success: false,
-          error: "Vercel Personal Access Token is required",
-        },
-        { status: 400 }
       );
     }
 
