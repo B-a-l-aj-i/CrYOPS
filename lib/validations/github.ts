@@ -11,7 +11,7 @@ export const githubGetDetailsSchema = z.object({
     (url) => {
       try {
         const urlObj = new URL(url);
-        return urlObj.hostname === "github.com" || urlObj.hostname === "www.github.com";
+        return urlObj.hostname === "github.com";
       } catch {
         return false;
       }
