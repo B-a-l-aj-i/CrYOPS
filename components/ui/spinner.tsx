@@ -19,7 +19,8 @@ const spinnerVariants = cva(
 );
 
 export interface SpinnerProps
-  extends React.HTMLAttributes<HTMLDivElement>,
+  extends
+    React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof spinnerVariants> {}
 
 const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(

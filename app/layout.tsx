@@ -14,7 +14,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "CrYOPS - Build your portfolio in minutes",
-  description: "Connect your data, choose a style, and let AI deploy your site to GitHub and Vercel. CrYOps is a platform that helps you build your portfolio in minutes.",
+  description:
+    "Connect your data, choose a style, and let AI deploy your site to GitHub and Vercel. CrYOps is a platform that helps you build your portfolio in minutes.",
 };
 
 export default function RootLayout({

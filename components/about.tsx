@@ -25,9 +25,9 @@ export default function About({ githubData }: AboutProps) {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center py-12">
+    <div className="flex flex-col items-center justify-center py-12">
       {/* Profile Image */}
-      <div className="inline-block mb-6">
+      <div className="mb-6 inline-block">
         <img
           src={profile.avatar}
           alt={profile.name}
@@ -38,10 +38,10 @@ export default function About({ githubData }: AboutProps) {
       </div>
 
       {/* Name */}
-      <h1 className="text-3xl font-bold text-slate-800 mb-4">{profile.name}</h1>
+      <h1 className="mb-4 text-3xl font-bold text-slate-800">{profile.name}</h1>
 
       {/* Bio */}
-      <p className="text-xl text-slate-400 max-w-5xl mx-auto mb-6 leading-relaxed text-center">
+      <p className="mx-auto mb-6 max-w-5xl text-center text-xl leading-relaxed text-slate-400">
         {profile.bio}
       </p>
 
@@ -51,32 +51,36 @@ export default function About({ githubData }: AboutProps) {
           href={profile.githubUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="h-11 px-6 bg-blue-50 rounded-2xl border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 hover:shadow-sm transition-all duration-300"
+          className="flex h-11 items-center gap-2 rounded-2xl border-slate-200 bg-blue-50 px-6 text-sm font-medium text-slate-700 transition-all duration-300 hover:shadow-sm"
         >
-          <GithubIcon className="w-4 h-4" />
+          <GithubIcon className="h-4 w-4" />
           GitHub
         </a>
 
         {profile.blog && (
           <a
-            href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`}
+            href={
+              profile.blog.startsWith("http")
+                ? profile.blog
+                : `https://${profile.blog}`
+            }
             target="_blank"
             rel="noopener noreferrer"
-            className="h-11 px-6 bg-blue-50 rounded-2xl  border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 hover:shadow-sm transition-all duration-300"
+            className="flex h-11 items-center gap-2 rounded-2xl border-slate-200 bg-blue-50 px-6 text-sm font-medium text-slate-700 transition-all duration-300 hover:shadow-sm"
           >
-            <GlobeIcon className="w-4 h-4" />
+            <GlobeIcon className="h-4 w-4" />
             Blog or Portfolio
           </a>
         )}
       </div>
 
       {/* GitHub Stats Dashboard */}
-      <div className="w-full mt-12">
+      <div className="mt-12 w-full">
         <GitHubStats data={githubData} />
       </div>
 
       {/* GitHub Contribution Calendar */}
-      <div className="w-full max-w-fit mx-auto px-4 mt-12">
+      <div className="mx-auto mt-12 w-full max-w-fit px-4">
         <GitHubCalendarWrapper username={githubData.profile.username} />
       </div>
     </div>
@@ -100,10 +104,10 @@ function GitHubCalendarWrapper({ username }: { username: string }) {
   return (
     <div className="relative min-h-[200px]">
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-50/90 rounded-lg z-10 backdrop-blur-sm">
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-slate-50/90 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-            <p className="text-xs text-slate-500 font-medium">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            <p className="text-xs font-medium text-slate-500">
               Loading contribution data...
             </p>
           </div>
@@ -111,7 +115,7 @@ function GitHubCalendarWrapper({ username }: { username: string }) {
       )}
       <div
         className={`${
-          isLoading ? "opacity-0 pointer-events-none" : "opacity-100"
+          isLoading ? "pointer-events-none opacity-0" : "opacity-100"
         } transition-opacity duration-500`}
         onLoad={() => setIsLoading(false)}
       >

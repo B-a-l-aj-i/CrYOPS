@@ -7,7 +7,14 @@ import { useVercelTokenStore } from "@/app/store";
 import { VercelTokenInput } from "./vercel-token-input";
 import { useDeployToVercel } from "@/hooks/QueryHooks/useDeployToVercel";
 import type { DeployToVercelResponse } from "@/hooks/QueryHooks/useDeployToVercel";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "./ui/dialog";
 
 interface DeployToVercelButtonProps {
   githubRepoUrl: string;
@@ -68,20 +75,20 @@ export function DeployToVercelButton({
   const isDeploying = deployMutation.isPending;
   const deployStatus = deployMutation.isSuccess
     ? {
-      type: "success" as const,
-      message:
-        deployMutation.data?.data?.message ||
-        "Portfolio successfully deployed to Vercel! Your site is now live!",
-      vercelUrl: deployMutation.data?.data?.vercelDeployment.url,
-    }
+        type: "success" as const,
+        message:
+          deployMutation.data?.data?.message ||
+          "Portfolio successfully deployed to Vercel! Your site is now live!",
+        vercelUrl: deployMutation.data?.data?.vercelDeployment.url,
+      }
     : deployMutation.isError
       ? {
-        type: "error" as const,
-        message:
-          deployMutation.error?.message ||
-          "An error occurred while deploying to Vercel. Please try again.",
-        vercelUrl: undefined,
-      }
+          type: "error" as const,
+          message:
+            deployMutation.error?.message ||
+            "An error occurred while deploying to Vercel. Please try again.",
+          vercelUrl: undefined,
+        }
       : null;
 
   return (
@@ -89,19 +96,24 @@ export function DeployToVercelButton({
       <Dialog open={showTokenInput} onOpenChange={setShowTokenInput}>
         {!storedToken && (
           <DialogTrigger asChild>
-            <Button variant="outline" className="cursor-pointer min-w-[200px]" size="lg">
-              <ExternalLink className="h-4 w-4 mr-2" />
+            <Button
+              variant="outline"
+              className="min-w-[200px] cursor-pointer"
+              size="lg"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
               Connect Vercel for Live URL
             </Button>
           </DialogTrigger>
         )}
-        <DialogContent 
-          className="max-w-md bg-white p-6" 
-        > 
+        <DialogContent className="max-w-md bg-white p-6">
           <DialogHeader className="text-center">
-            <DialogTitle className="text-lg font-semibold mb-4 text-center">Connect Vercel</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground mb-4 text-center">
-              Enter your Vercel Personal Access Token to deploy your portfolio to your Vercel account.
+            <DialogTitle className="mb-4 text-center text-lg font-semibold">
+              Connect Vercel
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground mb-4 text-center text-sm">
+              Enter your Vercel Personal Access Token to deploy your portfolio
+              to your Vercel account.
             </DialogDescription>
           </DialogHeader>
           <VercelTokenInput
@@ -115,18 +127,18 @@ export function DeployToVercelButton({
         <Button
           onClick={handleVercelDeploy}
           variant="outline"
-          className="cursor-pointer min-w-[200px]"
+          className="min-w-[200px] cursor-pointer"
           size="lg"
           disabled={isDeploying || !githubRepoUrl || !storedToken}
         >
           {isDeploying ? (
             <>
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Deploying...
             </>
           ) : (
             <>
-              <ExternalLink className="h-4 w-4 mr-2" />
+              <ExternalLink className="mr-2 h-4 w-4" />
               Deploy to Vercel
             </>
           )}
@@ -136,16 +148,17 @@ export function DeployToVercelButton({
       {/* Deployment Status */}
       {deployStatus && (
         <div
-          className={`w-full max-w-md p-4 rounded-lg border ${deployStatus.type === "success"
-              ? "bg-green-50 border-green-200 text-green-800"
-              : "bg-red-50 border-red-200 text-red-700"
-            }`}
+          className={`w-full max-w-md rounded-lg border p-4 ${
+            deployStatus.type === "success"
+              ? "border-green-200 bg-green-50 text-green-800"
+              : "border-red-200 bg-red-50 text-red-700"
+          }`}
         >
           <div className="flex items-start gap-3">
             {deployStatus.type === "success" ? (
-              <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0" />
+              <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
             ) : (
-              <XCircle className="h-5 w-5 mt-0.5 shrink-0" />
+              <XCircle className="mt-0.5 h-5 w-5 shrink-0" />
             )}
             <div className="flex-1">
               <p className="text-sm font-medium">{deployStatus.message}</p>
@@ -154,7 +167,7 @@ export function DeployToVercelButton({
                   href={deployStatus.vercelUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm underline mt-1 flex items-center gap-1 text-blue-600"
+                  className="mt-1 flex items-center gap-1 text-sm text-blue-600 underline"
                 >
                   <ExternalLink className="h-3 w-3" />
                   View live site →

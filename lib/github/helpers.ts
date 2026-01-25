@@ -7,7 +7,6 @@ import {
   type GitHubPRsResponse,
   type SanitizedRepo,
   type ContributionDetails,
-  type PinnedRepo,
 } from "@/lib/github/types";
 import {
   getLanguageColor,
@@ -42,8 +41,8 @@ export function validateUserData(userData: unknown): GitHubUserResponse {
       typeof data.name === "string"
         ? data.name
         : typeof data.login === "string"
-        ? data.login
-        : "",
+          ? data.login
+          : "",
     bio: typeof data.bio === "string" ? data.bio : "",
     avatar_url: typeof data.avatar_url === "string" ? data.avatar_url : "",
     html_url: typeof data.html_url === "string" ? data.html_url : "",
@@ -103,11 +102,14 @@ export function calculateLanguageDistribution(
   );
 
   // Count occurrences of each language
-  const languageCounts = reposWithLanguage.reduce((acc, repo) => {
-    const lang = repo.language as string;
-    acc[lang] = (acc[lang] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const languageCounts = reposWithLanguage.reduce(
+    (acc, repo) => {
+      const lang = repo.language as string;
+      acc[lang] = (acc[lang] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   // Calculate total repos with languages
   const totalReposWithLanguage = reposWithLanguage.length;
@@ -155,7 +157,6 @@ export function extractUsernameFromUrl(url: string): string | null {
   return null;
 }
 
-
 /**
  * Validate and map pinned repos data to minimal structure
  * Only extracts the 'name' field which is all we need for matching
@@ -192,7 +193,7 @@ export function extractUsernameFromUrl(url: string): string | null {
  * Sanitize and transform GitHub API repository data to SanitizedRepo format
  */
 export function sanitizeReposData(
-  reposData: GitHubRepoResponse[],
+  reposData: GitHubRepoResponse[]
   // pinnedData: PinnedRepo[]
   // pinnedData: any[] // Using any[] since we're commenting out pinned functionality
 ): SanitizedRepo[] {
@@ -218,7 +219,6 @@ export function sanitizeReposData(
     };
   });
 }
-
 
 /**
  * Process issues and PRs parsed data
@@ -408,7 +408,6 @@ export function getTopActivelyUsedRepos(
     })
     .slice(0, 6); // Take top 6
 }
-
 
 export async function fetchAllRepos(username: string) {
   const perPage = 100; // max allowed

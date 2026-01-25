@@ -117,7 +117,7 @@ export function CodingPlatforms() {
   };
 
   return (
-    <div className="space-y-3 opacity-50 pointer-events-none">
+    <div className="pointer-events-none space-y-3 opacity-50">
       <Label className="text-sm font-medium">Coding Platforms</Label>
 
       {/* Add Platform Form */}
@@ -136,7 +136,7 @@ export function CodingPlatforms() {
         </Select>
 
         <div className="relative flex-1">
-          <Code className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Code className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
           <Input
             type="text"
             placeholder="Enter username"
@@ -167,16 +167,16 @@ export function CodingPlatforms() {
           {codingPlatforms.map((platform) => (
             <div
               key={platform.id}
-              className="flex items-center gap-2 rounded-lg border p-3 bg-muted/30"
+              className="bg-muted/30 flex items-center gap-2 rounded-lg border p-3"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <Code className="h-4 w-4 text-muted-foreground" />
+                  <Code className="text-muted-foreground h-4 w-4" />
                   <span className="text-sm font-medium">
                     {getPlatformLabel(platform.platform)}
                   </span>
                 </div>
-                <span className="text-xs text-muted-foreground ml-6">
+                <span className="text-muted-foreground ml-6 text-xs">
                   {platform.url}
                 </span>
               </div>
@@ -191,9 +191,9 @@ export function CodingPlatforms() {
                   }
                   className={cn(
                     platform.validationStatus === "success" &&
-                      "bg-green-50 border-green-500 text-green-700 hover:bg-green-100",
+                      "border-green-500 bg-green-50 text-green-700 hover:bg-green-100",
                     platform.validationStatus === "error" &&
-                      "bg-red-50 border-red-500 text-red-700 hover:bg-red-100"
+                      "border-red-500 bg-red-50 text-red-700 hover:bg-red-100"
                   )}
                 >
                   {validatingPlatformId === platform.id ? (

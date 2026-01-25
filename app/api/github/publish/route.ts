@@ -1,7 +1,11 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { generateTemplate } from "@/lib/template-generator";
-import { createGitHubRepo, uploadFilesToRepo, repoExists } from "@/lib/github-repo-service";
+import {
+  createGitHubRepo,
+  uploadFilesToRepo,
+  repoExists,
+} from "@/lib/github-repo-service";
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,7 +51,8 @@ export async function POST(request: NextRequest) {
       return Response.json(
         {
           success: false,
-          error: "Invalid GitHub data structure. Profile information is required.",
+          error:
+            "Invalid GitHub data structure. Profile information is required.",
         },
         { status: 400 }
       );
@@ -59,7 +64,9 @@ export async function POST(request: NextRequest) {
     // Check if repo already exists
     const exists = await repoExists(session.accessToken, username, repoName);
     if (exists) {
-      console.error(`Repository ${repoName} already exists. Please delete it first or use a different name.`);
+      console.error(
+        `Repository ${repoName} already exists. Please delete it first or use a different name.`
+      );
       return Response.json(
         {
           success: false,
@@ -116,14 +123,14 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("[Deploy API] Error deploying repository:", errorMessage);
 
     return Response.json(
       {
         success: false,
-        error: "An error occurred while deploying the repository. Please try again.",
+        error:
+          "An error occurred while deploying the repository. Please try again.",
       },
       { status: 500 }
     );

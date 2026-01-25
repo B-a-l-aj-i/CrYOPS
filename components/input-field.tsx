@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { LucideIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface InputFieldProps {
-  label: string
-  placeholder: string
-  icon: LucideIcon
-  value?: string
-  onChange?: (value: string) => void
-  className?: string
-  rightButton?: React.ReactNode
-  disabled?: boolean
+  label: string;
+  placeholder: string;
+  icon: LucideIcon;
+  value?: string;
+  onChange?: (value: string) => void;
+  className?: string;
+  rightButton?: React.ReactNode;
+  disabled?: boolean;
 }
 
 export function InputField({
@@ -31,7 +31,7 @@ export function InputField({
     <div className={cn("space-y-2", className)}>
       <Label className="text-sm font-medium">{label}</Label>
       <div className="relative">
-        <Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Icon className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
         <Input
           type="text"
           placeholder={placeholder}
@@ -42,12 +42,11 @@ export function InputField({
           readOnly={disabled}
         />
         {rightButton && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">
+          <div className="absolute top-1/2 right-2 -translate-y-1/2">
             {rightButton}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
-

@@ -1,15 +1,14 @@
-import { Main } from "@/components/main"
-import { Profile } from "@/components/profile"
-import { Build } from "@/components/build"
-
+import { Main } from "@/components/main";
+import { Profile } from "@/components/profile";
+import { Build } from "@/components/build";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <h1 className="text-2xl font-bold text-primary">CrYOPS</h1>
+          <h1 className="text-primary text-2xl font-bold">CrYOPS</h1>
           <Profile />
         </div>
       </header>
@@ -17,9 +16,13 @@ export default function App() {
       {/* Main Content */}
       <main className="container mx-auto max-w-4xl px-6 py-8">
         {/* Hero Section */}
-        <div className="flex flex-col items-center justify-center mb-12">
+        <div className="mb-12 flex flex-col items-center justify-center">
           <h2 className="mb-2 text-3xl font-bold tracking-tight">
-            <span className="text-primary">Cr</span>eate <span className="text-primary">Y</span>our <span className="text-primary">O</span>wn <span className="text-primary">P</span>ortfolio <span className="text-primary">S</span>ite
+            <span className="text-primary">Cr</span>eate{" "}
+            <span className="text-primary">Y</span>our{" "}
+            <span className="text-primary">O</span>wn{" "}
+            <span className="text-primary">P</span>ortfolio{" "}
+            <span className="text-primary">S</span>ite
           </h2>
           <p className="text-muted-foreground">
             Connect your data, choose a style, and let AI deploy your site to
@@ -33,5 +36,5 @@ export default function App() {
         <Build />
       </main>
     </div>
-  )
+  );
 }
