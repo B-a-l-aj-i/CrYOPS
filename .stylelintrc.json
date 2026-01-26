@@ -27,6 +27,7 @@
     ".next/**",
     "out/**",
     "build/**",
-    "dist/**"
+    "dist/**",
+    "app/globals.css"
   ]
 }

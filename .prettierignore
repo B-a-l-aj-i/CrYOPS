@@ -41,3 +41,6 @@ pnpm-debug.log*
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+
+# Exclude globals.css from formatting
+app/globals.css

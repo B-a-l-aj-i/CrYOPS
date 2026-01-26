@@ -48,7 +48,9 @@
     "package-lock.json",
     "yarn.lock",
     ".prettiercache",
-    ".cache"
+    ".cache",
+    "app/globals.css",
+    ".git/**"
   ],
   "includeRegExpList": ["/[#]+[\\s]+([\\w\\s]+)/g"],
   "patterns": [

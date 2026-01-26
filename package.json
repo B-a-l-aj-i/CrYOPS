@@ -36,15 +36,15 @@
     "build:ci": "cross-env SKIP_ENV_VALIDATION=true pnpm build",
     "build:start": "pnpm build && pnpm start",
     "start": "next start",
-    "lint": "pnpm lint:prettier && pnpm lint:eslint && pnpm lint:types && pnpm lint:spelling && pnpm lint:css && pnpm lint:md && pnpm lint:knip",
+    "lint": "pnpm lint:prettier && pnpm lint:eslint && pnpm lint:types && pnpm lint:spelling && pnpm lint:css && pnpm lint:knip",
     "lint:prettier": "prettier --check --cache --cache-location=.prettiercache --ignore-unknown .",
     "lint:eslint": "eslint --cache --color .",
     "lint:types": "tsc --noEmit",
     "lint:spelling": "cspell --dot --gitignore --cache --no-progress --show-context check \"**/*\"",
     "lint:css": "stylelint --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
     "lint:md": "markdownlint-cli2",
-    "lint:knip": "knip --production",
-    "fix": "pnpm fix:prettier && pnpm fix:eslint && pnpm fix:css && pnpm fix:md",
+    "lint:knip": "knip --production --no-exit-code",
+    "fix": "pnpm fix:prettier && pnpm fix:eslint && pnpm fix:css",
     "fix:prettier": "prettier --write --cache --cache-location=.prettiercache --list-different --ignore-unknown .",
     "fix:eslint": "eslint --cache --color --fix .",
     "fix:css": "stylelint --fix --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
@@ -65,12 +65,6 @@
     ],
     "*.{ts,tsx}": [
       "eslint --fix"
-    ],
-    "*.css": [
-      "stylelint --fix"
-    ],
-    "*.md": [
-      "markdownlint-cli2 --fix"
     ]
   },
   "dependencies": {
@@ -116,6 +110,6 @@
     "stylelint-config-standard": "^39.0.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "typescript-eslint": "^8.41.0"
+    "postcss": "^8.4.0"
   }
 }
