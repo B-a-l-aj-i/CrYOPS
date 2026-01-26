@@ -34,13 +34,13 @@ export const useLeetCodeStore = create<LeetCodeStore>()(
 );
 
 interface GithubStore {
-    githubUrl: string;
-    githubData: GitHubData | null;
-    _hasHydrated: boolean;
-    setGithubUrl: (githubUrl: string) => void;
-    setGithubData: (githubData: GitHubData) => void;
-    setHasHydrated: (hasHydrated: boolean) => void;
-  }
+  githubUrl: string;
+  githubData: GitHubData | null;
+  _hasHydrated: boolean;
+  setGithubUrl: (githubUrl: string) => void;
+  setGithubData: (githubData: GitHubData) => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
+}
 
 export const useGithubStore = create<GithubStore>()(
   persist(
@@ -50,7 +50,8 @@ export const useGithubStore = create<GithubStore>()(
       _hasHydrated: false,
       setGithubUrl: (githubUrl: string) => set({ githubUrl }),
       setGithubData: (githubData: GitHubData) => set({ githubData }),
-      setHasHydrated: (hasHydrated: boolean) => set({ _hasHydrated: hasHydrated }),
+      setHasHydrated: (hasHydrated: boolean) =>
+        set({ _hasHydrated: hasHydrated }),
     }),
     {
       name: "github-portfolio-data",
@@ -67,8 +68,6 @@ export const useGithubStore = create<GithubStore>()(
     }
   )
 );
-
-
 
 export interface LeetCodeData {
   rank: number;
@@ -96,7 +95,12 @@ export interface LeetCodeData {
   profile: {
     username: string;
   };
-  recentSubmissions: Array<{ title: string; timestamp: string; lang: string; statusDisplay: string }>;
+  recentSubmissions: Array<{
+    title: string;
+    timestamp: string;
+    lang: string;
+    statusDisplay: string;
+  }>;
   profileUrl: string;
   contestRating?: number;
 }
@@ -130,11 +134,11 @@ interface DeploymentStore {
   isGithubDeployed: boolean;
   repoUrl: string | null;
   githubDeploymentTime: string | null;
-  
+
   // Vercel deployment state (simplified - no auth tracking)
   vercelUrl: string | null;
   vercelDeploymentTime: string | null;
-  
+
   // Actions
   setGithubDeployed: (repoUrl: string) => void;
   setVercelDeployed: (vercelUrl: string) => void;
@@ -147,16 +151,19 @@ export const useVercelTokenStore = create<VercelTokenStore>()(
       vercelToken: null,
       tokenCreated: null,
       _hasHydrated: false,
-      setVercelToken: (token) => set({ 
-        vercelToken: token,
-        tokenCreated: new Date().toISOString()
-      }),
+      setVercelToken: (token) =>
+        set({
+          vercelToken: token,
+          tokenCreated: new Date().toISOString(),
+        }),
       setTokenCreated: (date) => set({ tokenCreated: date }),
-      clearVercelToken: () => set({ 
-        vercelToken: null, 
-        tokenCreated: null 
-      }),
-      setHasHydrated: (hasHydrated: boolean) => set({ _hasHydrated: hasHydrated }),
+      clearVercelToken: () =>
+        set({
+          vercelToken: null,
+          tokenCreated: null,
+        }),
+      setHasHydrated: (hasHydrated: boolean) =>
+        set({ _hasHydrated: hasHydrated }),
     }),
     {
       name: "vercel-token-storage",
@@ -180,30 +187,30 @@ export const useDeploymentStore = create<DeploymentStore>()(
       isGithubDeployed: false,
       repoUrl: null,
       githubDeploymentTime: null,
-      
+
       // Vercel deployment state
       vercelUrl: null,
       vercelDeploymentTime: null,
-      
+
       // Actions
-      setGithubDeployed: (repoUrl: string) => 
-        set({ 
+      setGithubDeployed: (repoUrl: string) =>
+        set({
           isGithubDeployed: true,
-          repoUrl, 
-          githubDeploymentTime: new Date().toISOString() 
+          repoUrl,
+          githubDeploymentTime: new Date().toISOString(),
         }),
-      setVercelDeployed: (vercelUrl: string) => 
-        set({ 
-          vercelUrl, 
-          vercelDeploymentTime: new Date().toISOString()
+      setVercelDeployed: (vercelUrl: string) =>
+        set({
+          vercelUrl,
+          vercelDeploymentTime: new Date().toISOString(),
         }),
-      clearDeploymentData: () => 
-        set({ 
+      clearDeploymentData: () =>
+        set({
           isGithubDeployed: false,
-          repoUrl: null, 
+          repoUrl: null,
           githubDeploymentTime: null,
-          vercelUrl: null, 
-          vercelDeploymentTime: null
+          vercelUrl: null,
+          vercelDeploymentTime: null,
         }),
     }),
     {

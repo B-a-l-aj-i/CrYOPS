@@ -47,8 +47,8 @@ export function GitHub() {
       ? "success"
       : "error"
     : validateGithubMutation.isError
-    ? "error"
-    : null;
+      ? "error"
+      : null;
 
   return (
     <InputField
@@ -67,9 +67,9 @@ export function GitHub() {
             className={cn(
               "h-7 px-3 text-xs",
               githubValidationStatus === "success" &&
-                "bg-green-50 border-green-500 text-green-700 hover:bg-green-100",
+                "border-green-500 bg-green-50 text-green-700 hover:bg-green-100",
               githubValidationStatus === "error" &&
-                "bg-red-50 border-red-500 text-red-700 hover:bg-red-100"
+                "border-red-500 bg-red-50 text-red-700 hover:bg-red-100"
             )}
           >
             {isValidatingGithub ? (

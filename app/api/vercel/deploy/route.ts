@@ -10,11 +10,20 @@ function getUserFriendlyError(error: unknown): string {
     const message = error.message.toLowerCase();
     const status = (error as { status?: number }).status;
 
-    if (status === 401 || status === 403 || message.includes("unauthorized") || message.includes("forbidden")) {
+    if (
+      status === 401 ||
+      status === 403 ||
+      message.includes("unauthorized") ||
+      message.includes("forbidden")
+    ) {
       return "Invalid Vercel token. Please check your token and try again.";
     }
 
-    if (message.includes("already exists") || message.includes("duplicate") || message.includes("conflict")) {
+    if (
+      message.includes("already exists") ||
+      message.includes("duplicate") ||
+      message.includes("conflict")
+    ) {
       return "A project with this name already exists. Please use a different repository or delete the existing project.";
     }
 
@@ -22,11 +31,18 @@ function getUserFriendlyError(error: unknown): string {
       return "Repository not found. Please check that the GitHub repository exists and is accessible.";
     }
 
-    if (message.includes("rate limit") || message.includes("too many requests")) {
+    if (
+      message.includes("rate limit") ||
+      message.includes("too many requests")
+    ) {
       return "Too many requests. Please wait a moment and try again.";
     }
 
-    if (message.includes("network") || message.includes("timeout") || message.includes("connection")) {
+    if (
+      message.includes("network") ||
+      message.includes("timeout") ||
+      message.includes("connection")
+    ) {
       return "Network error. Please check your connection and try again.";
     }
 
@@ -134,7 +150,9 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      console.log(`Vercel deployment created: ${deployment.id} for project ${project.id}`);
+      console.log(
+        `Vercel deployment created: ${deployment.id} for project ${project.id}`
+      );
 
       // Step 3: Return success response with public URLs
       return Response.json({
@@ -154,8 +172,12 @@ export async function POST(request: NextRequest) {
       // Log detailed error for debugging
       console.error("[Vercel Deploy] Deployment error:", {
         error: deploymentError,
-        message: deploymentError instanceof Error ? deploymentError.message : String(deploymentError),
-        stack: deploymentError instanceof Error ? deploymentError.stack : undefined,
+        message:
+          deploymentError instanceof Error
+            ? deploymentError.message
+            : String(deploymentError),
+        stack:
+          deploymentError instanceof Error ? deploymentError.stack : undefined,
         status: (deploymentError as { status?: number }).status,
         projectName,
         owner,

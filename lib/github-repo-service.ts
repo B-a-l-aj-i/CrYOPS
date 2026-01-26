@@ -41,7 +41,9 @@ export async function createGitHubRepo(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
     throw new Error(
       `Failed to create repository: ${error.message || response.statusText} (${response.status})`
     );
@@ -83,7 +85,9 @@ export async function uploadFileToRepo(
   );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
     throw new Error(
       `Failed to upload file ${path}: ${error.message || response.statusText} (${response.status})`
     );
@@ -101,24 +105,31 @@ async function createBlobsForFiles(
 ): Promise<Array<{ path: string; sha: string }>> {
   const blobPromises = files.map(async (file) => {
     // Encode content as base64
-    const encodedContent = Buffer.from(file.content, "utf-8").toString("base64");
-    
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/blobs`, {
-      method: "POST",
-      headers: {
-        Authorization: `token ${accessToken}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-        "User-Agent": "CrYOPS",
-      },
-      body: JSON.stringify({
-        content: encodedContent,
-        encoding: "base64",
-      }),
-    });
+    const encodedContent = Buffer.from(file.content, "utf-8").toString(
+      "base64"
+    );
+
+    const response = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/git/blobs`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `token ${accessToken}`,
+          Accept: "application/vnd.github.v3+json",
+          "Content-Type": "application/json",
+          "User-Agent": "CrYOPS",
+        },
+        body: JSON.stringify({
+          content: encodedContent,
+          encoding: "base64",
+        }),
+      }
+    );
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: response.statusText }));
+      const error = await response
+        .json()
+        .catch(() => ({ message: response.statusText }));
       throw new Error(
         `Failed to create blob for ${file.path}: ${error.message || response.statusText} (${response.status})`
       );
@@ -146,7 +157,7 @@ async function createTreeWithFiles(
 ): Promise<string> {
   // Create blobs first for empty repositories
   const fileBlobs = await createBlobsForFiles(accessToken, owner, repo, files);
-  
+
   const tree = fileBlobs.map((blob) => ({
     path: blob.path,
     mode: "100644" as const, // Regular file
@@ -164,19 +175,24 @@ async function createTreeWithFiles(
     requestBody.base_tree = baseTreeSha;
   }
 
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees`, {
-    method: "POST",
-    headers: {
-      Authorization: `token ${accessToken}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json",
-      "User-Agent": "CrYOPS",
-    },
-    body: JSON.stringify(requestBody),
-  });
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/trees`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${accessToken}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+        "User-Agent": "CrYOPS",
+      },
+      body: JSON.stringify(requestBody),
+    }
+  );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
     throw new Error(
       `Failed to create tree: ${error.message || response.statusText} (${response.status})`
     );
@@ -208,19 +224,24 @@ async function createSingleCommit(
     body.parents = [parentCommitSha];
   }
 
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/commits`, {
-    method: "POST",
-    headers: {
-      Authorization: `token ${accessToken}`,
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json",
-      "User-Agent": "CrYOPS",
-    },
-    body: JSON.stringify(body),
-  });
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/git/commits`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `token ${accessToken}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+        "User-Agent": "CrYOPS",
+      },
+      body: JSON.stringify(body),
+    }
+  );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
     throw new Error(
       `Failed to create commit: ${error.message || response.statusText} (${response.status})`
     );
@@ -229,8 +250,6 @@ async function createSingleCommit(
   const data = await response.json();
   return data.sha;
 }
-
-
 
 /**
  * Update the branch reference to point to the new commit
@@ -260,7 +279,9 @@ async function updateBranchReference(
   );
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
     throw new Error(
       `Failed to update branch reference: ${error.message || response.statusText} (${response.status})`
     );
@@ -293,7 +314,9 @@ async function getBranchReference(
     if (branch === "main") {
       return getBranchReference(accessToken, owner, repo, "master");
     }
-    const error = await response.json().catch(() => ({ message: response.statusText }));
+    const error = await response
+      .json()
+      .catch(() => ({ message: response.statusText }));
     throw new Error(
       `Failed to get branch reference: ${error.message || response.statusText} (${response.status})`
     );
@@ -338,10 +361,10 @@ export async function uploadFilesToRepo(
 
   // Create tree with all files using the existing commit as base
   const treeSha = await createTreeWithFiles(
-    accessToken, 
-    owner, 
-    repo, 
-    files, 
+    accessToken,
+    owner,
+    repo,
+    files,
     parentCommitSha // Use parent commit as base
   );
 
@@ -372,14 +395,17 @@ export async function repoExists(
   owner: string,
   repo: string
 ): Promise<boolean> {
-  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-    method: "GET",
-    headers: {
-      Authorization: `token ${accessToken}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "CrYOPS",
-    },
-  });
+  const response = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `token ${accessToken}`,
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "CrYOPS",
+      },
+    }
+  );
 
   return response.ok;
 }

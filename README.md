@@ -1,6 +1,7 @@
 # CrYOPS
 
-**Create Your Own Portfolio Site** - A powerful Next.js application that helps you build and deploy a professional portfolio website by integrating your data from multiple platforms.
+**Create Your Own Portfolio Site** - A powerful Next.js application that helps you build and
+deploy a professional portfolio website by integrating your data from multiple platforms.
 
 ## 🚀 Features
 
@@ -25,12 +26,14 @@
 ## 📦 Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd cryops
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    # or
@@ -38,12 +41,14 @@
    ```
 
 3. Set up environment variables:
+
    ```bash
    cp .env.example .env
    # Fill in your environment variables
    ```
 
 4. Run the development server:
+
    ```bash
    pnpm dev
    # or
@@ -65,7 +70,7 @@ AUTH_SECRET=your-nextauth-secret
 
 ## 📁 Project Structure
 
-```
+```text
 cryops/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -94,11 +99,13 @@ cryops/
 ### Manual Deployment
 
 1. Build the application:
+
    ```bash
    pnpm build
    ```
 
 2. Start the production server:
+
    ```bash
    pnpm start
    ```
@@ -119,5 +126,7 @@ This project is licensed under the MIT License.
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial
-- [Next.js GitHub Repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-- [Vercel Deployment Documentation](https://nextjs.org/docs/app/building-your-application/deploying) - more details on deployment options
+- [Next.js GitHub Repository](https://github.com/vercel/next.js) - your feedback and
+  contributions are welcome!
+- [Vercel Deployment Documentation](https://nextjs.org/docs/app/building-your-application/deploying) -
+  more details on deployment options

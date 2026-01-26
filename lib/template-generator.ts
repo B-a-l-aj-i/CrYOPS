@@ -8,45 +8,52 @@ export interface TemplateFile {
 /**
  * Generate a complete Vite + React portfolio template from GitHub data
  */
-export function generateTemplate(githubData: GitHubData, username: string): TemplateFile[] {
+export function generateTemplate(
+  githubData: GitHubData,
+  username: string
+): TemplateFile[] {
   const files: TemplateFile[] = [];
 
   // package.json
   files.push({
     path: "package.json",
-    content: JSON.stringify({
-      "name": `cryops-portfolio-${username}`,
-      "private": true,
-      "version": "0.1.0",
-      "type": "module",
-      "engines": {
-        "node": "20.x"
+    content: JSON.stringify(
+      {
+        name: `cryops-portfolio-${username}`,
+        private: true,
+        version: "0.1.0",
+        type: "module",
+        engines: {
+          node: "20.x",
+        },
+        scripts: {
+          dev: "vite",
+          build: "tsc && vite build",
+          preview: "vite preview",
+        },
+        dependencies: {
+          clsx: "^2.1.1",
+          "lucide-react": "^0.562.0",
+          react: "^18.2.0",
+          "react-dom": "^18.2.0",
+          "react-github-calendar": "^5.0.4",
+          "tailwind-merge": "^3.4.0",
+        },
+        devDependencies: {
+          "@tailwindcss/postcss": "^4.1.18",
+          "@types/react": "^18.2.0",
+          "@types/react-dom": "^18.2.0",
+          "@vitejs/plugin-react": "^4.2.0",
+          autoprefixer: "^10.4.0",
+          postcss: "^8.4.0",
+          tailwindcss: "^4.0.0",
+          typescript: "^5.0.0",
+          vite: "^5.0.0",
+        },
       },
-      "scripts": {
-        "dev": "vite",
-        "build": "tsc && vite build",
-        "preview": "vite preview"
-      },
-      "dependencies": {
-        "clsx": "^2.1.1",
-        "lucide-react": "^0.562.0",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "react-github-calendar": "^5.0.4",
-        "tailwind-merge": "^3.4.0"
-      },
-      "devDependencies": {
-        "@tailwindcss/postcss": "^4.1.18",
-        "@types/react": "^18.2.0",
-        "@types/react-dom": "^18.2.0",
-        "@vitejs/plugin-react": "^4.2.0",
-        "autoprefixer": "^10.4.0",
-        "postcss": "^8.4.0",
-        "tailwindcss": "^4.0.0",
-        "typescript": "^5.0.0",
-        "vite": "^5.0.0"
-      }
-    }, null, 2),
+      null,
+      2
+    ),
   });
 
   // vite.config.ts
@@ -64,42 +71,50 @@ export default defineConfig({
   // tsconfig.json
   files.push({
     path: "tsconfig.json",
-    content: JSON.stringify({
-      compilerOptions: {
-        target: "ES2020",
-        useDefineForClassFields: true,
-        lib: ["ES2020", "DOM", "DOM.Iterable"],
-        module: "ESNext",
-        skipLibCheck: true,
-        moduleResolution: "bundler",
-        allowImportingTsExtensions: true,
-        resolveJsonModule: true,
-        isolatedModules: true,
-        noEmit: true,
-        jsx: "react-jsx",
-        strict: true,
-        noUnusedLocals: true,
-        noUnusedParameters: true,
-        noFallthroughCasesInSwitch: true,
+    content: JSON.stringify(
+      {
+        compilerOptions: {
+          target: "ES2020",
+          useDefineForClassFields: true,
+          lib: ["ES2020", "DOM", "DOM.Iterable"],
+          module: "ESNext",
+          skipLibCheck: true,
+          moduleResolution: "bundler",
+          allowImportingTsExtensions: true,
+          resolveJsonModule: true,
+          isolatedModules: true,
+          noEmit: true,
+          jsx: "react-jsx",
+          strict: true,
+          noUnusedLocals: true,
+          noUnusedParameters: true,
+          noFallthroughCasesInSwitch: true,
+        },
+        include: ["src"],
+        references: [{ path: "./tsconfig.node.json" }],
       },
-      include: ["src"],
-      references: [{ path: "./tsconfig.node.json" }],
-    }, null, 2),
+      null,
+      2
+    ),
   });
 
   // tsconfig.node.json
   files.push({
     path: "tsconfig.node.json",
-    content: JSON.stringify({
-      compilerOptions: {
-        composite: true,
-        skipLibCheck: true,
-        module: "ESNext",
-        moduleResolution: "bundler",
-        allowSyntheticDefaultImports: true,
+    content: JSON.stringify(
+      {
+        compilerOptions: {
+          composite: true,
+          skipLibCheck: true,
+          module: "ESNext",
+          moduleResolution: "bundler",
+          allowSyntheticDefaultImports: true,
+        },
+        include: ["vite.config.ts"],
       },
-      include: ["vite.config.ts"],
-    }, null, 2),
+      null,
+      2
+    ),
   });
 
   // index.html

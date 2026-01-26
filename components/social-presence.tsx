@@ -1,17 +1,17 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { InputField } from "@/components/input-field"
-import { Twitter, Instagram, Youtube, BookOpen, Globe } from "lucide-react"
-import { useState } from "react"
+import * as React from "react";
+import { InputField } from "@/components/input-field";
+import { Twitter, Instagram, Youtube, BookOpen, Globe } from "lucide-react";
+import { useState } from "react";
 
 export function SocialPresence() {
-  const [companyMode] = useState(false)
+  const [companyMode] = useState(false);
 
   return (
-    <section className="mb-12 border rounded-lg p-7 opacity-50 pointer-events-none">
+    <section className="pointer-events-none mb-12 rounded-lg border p-7 opacity-50">
       <h3 className="mb-2 text-xl font-semibold">Social Presence & Blogs</h3>
-      <p className="mb-6 text-sm text-muted-foreground">
+      <p className="text-muted-foreground mb-6 text-sm">
         Add links to where you are active. Leave empty if not applicable.
       </p>
       <div className="space-y-4">
@@ -49,6 +49,5 @@ export function SocialPresence() {
         )}
       </div>
     </section>
-  )
+  );
 }
-

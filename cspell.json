@@ -18,8 +18,57 @@
     "shadcn",
     "html",
     "tsx",
-    "tsbuildinfo"
+    "tsbuildinfo",
+    "hackerrank",
+    "codeforces",
+    "codewars",
+    "codechef",
+    "nextauth",
+    "tanstack",
+    "github",
+    "githubcalendar",
+    "prettiercache",
+    "commitlint",
+    "lintstaged",
+    "stylelint",
+    "markdownlint",
+    "knip"
   ],
   "ignoreWords": [],
-  "flagWords": []
+  "flagWords": [],
+  "ignorePaths": [
+    "node_modules/**",
+    ".next/**",
+    "out/**",
+    "build/**",
+    "dist/**",
+    "coverage/**",
+    "*.tsbuildinfo",
+    "pnpm-lock.yaml",
+    "package-lock.json",
+    "yarn.lock",
+    ".prettiercache",
+    ".cache",
+    ".cspellcache",
+    "app/globals.css",
+    ".git/**"
+  ],
+  "includeRegExpList": ["/[#]+[\\s]+([\\w\\s]+)/g"],
+  "patterns": [
+    {
+      "name": "Markdown Code Blocks",
+      "pattern": "/^\\s*```[\\s\\S]*?^\\s*```/gm",
+      "description": "Ignore markdown code blocks"
+    },
+    {
+      "name": "HTML Tags",
+      "pattern": "/<[^>]+>/g",
+      "description": "Ignore HTML tags"
+    },
+    {
+      "name": "URLs",
+      "pattern": "/https?:\\/\\/[^\\s]+/g",
+      "description": "Ignore URLs"
+    }
+  ]
 }

@@ -103,7 +103,6 @@ export interface LanguageDistribution {
   color: string;
 }
 
-
 export interface ContributionsResponse {
   contributions?: Array<{ date: string; count: number }>;
   total?: Record<string, number>;

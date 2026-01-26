@@ -45,3 +45,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cache
+.prettiercache
+.cache
+.stylelintcache
+.eslintcache
+.cspellcache

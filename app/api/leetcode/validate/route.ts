@@ -6,7 +6,7 @@ function extractUsernameFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
-    
+
     // Handle leetcode.com/u/username or leetcode.com/username (with or without trailing slash)
     const match = pathname.match(/\/(?:u\/)?([^\/]+)\/?$/);
     return match ? match[1] : null;
@@ -97,4 +97,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

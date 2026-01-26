@@ -1,0 +1,31 @@
+{
+  "config": {
+    "default": true,
+    "MD013": {
+      "line_length": 100,
+      "code_blocks": false,
+      "tables": false,
+    },
+    "MD033": false,
+    "MD041": false,
+  },
+  "globs": [
+    "*.md",
+    "app/**/*.md",
+    "components/**/*.md",
+    "lib/**/*.md",
+    "hooks/**/*.md",
+    "docs/**/*.md",
+    "#node_modules",
+    "#.next",
+    "#out",
+    "#build",
+    "#dist",
+    "#.git",
+    "#.cursor",
+    "#.vscode",
+    "#.husky",
+    "#coverage",
+    "#.cache",
+  ],
+}

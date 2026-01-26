@@ -28,7 +28,7 @@ export function Profile() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-muted transition-colors hover:bg-muted/80">
+        <div className="bg-muted hover:bg-muted/80 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full transition-colors">
           {status === "authenticated" && session?.user?.image ? (
             <Image
               unoptimized={true}
@@ -39,21 +39,22 @@ export function Profile() {
               className="rounded-full"
             />
           ) : (
-            <User className="h-5 w-5 text-muted-foreground" />
+            <User className="text-muted-foreground h-5 w-5" />
           )}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {status === "authenticated" ? (
-     <>
-          <DropdownMenuItem onClick={handleSignOut}>
-            <LogOut className="mr-2 h-4 w-4" />
-            <span>Sign Out</span>
-          </DropdownMenuItem>
-           <DropdownMenuItem onClick={handleSettings}>
-           <Settings className="mr-2 h-4 w-4" />
-           <span>Settings</span>
-         </DropdownMenuItem></>
+          <>
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign Out</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSettings}>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+          </>
         ) : (
           <DropdownMenuItem onClick={handleSignIn}>
             <LogIn className="mr-2 h-4 w-4" />
@@ -64,4 +65,3 @@ export function Profile() {
     </DropdownMenu>
   );
 }
-
