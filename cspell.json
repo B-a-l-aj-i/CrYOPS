@@ -49,6 +49,7 @@
     "yarn.lock",
     ".prettiercache",
     ".cache",
+    ".cspellcache",
     "app/globals.css",
     ".git/**"
   ],

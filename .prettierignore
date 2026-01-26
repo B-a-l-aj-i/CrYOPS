@@ -36,6 +36,7 @@ pnpm-debug.log*
 # Cache
 .prettiercache
 .cache
+.cspellcache
 
 # Lock files
 pnpm-lock.yaml
