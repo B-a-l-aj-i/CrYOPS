@@ -32,8 +32,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:sourcemap": "cross-env SOURCEMAP=true pnpm dev",
-    "build": "next build",
-    "build:ci": "cross-env SKIP_ENV_VALIDATION=true pnpm build",
+    "build": "pnpm lint && next build",
+    "build:ci": "cross-env SKIP_ENV_VALIDATION=true pnpm lint && next build",
     "build:start": "pnpm build && pnpm start",
     "start": "next start",
     "lint": "pnpm lint:prettier && pnpm lint:eslint && pnpm lint:types && pnpm lint:spelling && pnpm lint:css && pnpm lint:knip",
