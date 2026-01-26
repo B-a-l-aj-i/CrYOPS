@@ -25,11 +25,8 @@ const config: KnipConfig = {
     "tsc",
   ],
   ignoreDependencies: [
-    "@radix-ui/react-dialog",
-    "@radix-ui/react-dropdown-menu",
-    "@radix-ui/react-select",
-    "@radix-ui/react-slot",
-    "@radix-ui/react-switch",
+    // Radix UI packages - used via shadcn/ui components in components/ui/
+    "@radix-ui/*",
     "@tanstack/react-query",
     "class-variance-authority",
     "clsx",
