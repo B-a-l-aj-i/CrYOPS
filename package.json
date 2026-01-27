@@ -31,12 +31,12 @@
   "packageManager": "pnpm@10.15.1",
   "scripts": {
     "dev": "next dev",
+    "build": "next build",
+    "lint": "pnpm lint:prettier && pnpm lint:eslint && pnpm lint:types && pnpm lint:spelling && pnpm lint:css && pnpm lint:knip",
+    "type-check": "pnpm lint:types",
     "dev:sourcemap": "cross-env SOURCEMAP=true pnpm dev",
-    "build": "pnpm lint && next build",
-    "build:ci": "cross-env SKIP_ENV_VALIDATION=true next build",
     "build:start": "pnpm build && pnpm start",
     "start": "next start",
-    "lint": "pnpm lint:prettier && pnpm lint:eslint && pnpm lint:types && pnpm lint:spelling && pnpm lint:css && pnpm lint:knip",
     "lint:prettier": "prettier --check --cache --cache-location=.prettiercache --ignore-unknown .",
     "lint:eslint": "eslint --cache --color .",
     "lint:types": "tsc --noEmit",
@@ -50,7 +50,6 @@
     "fix:css": "stylelint --fix --cache --ignore-path .gitignore --color -f verbose '**/*.css'",
     "fix:md": "markdownlint-cli2 --fix",
     "fix:spelling": "cspell --no-must-find-files --no-progress --words-only --unique | sort -u >> cspell.json || true",
-    "type-check": "pnpm lint:types",
     "prepare": "is-ci || husky"
   },
   "commitlint": {
