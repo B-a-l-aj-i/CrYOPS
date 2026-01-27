@@ -7,9 +7,9 @@ export function Main() {
   return (
     <>
       <CoreSources />
-      <SocialPresence />
-      <SelectInspiration />
-      <CustomInstructions />
+      {/* <SocialPresence /> */}
+      {/* <SelectInspiration /> */}
+      {/* <CustomInstructions /> */}
     </>
   );
 }
