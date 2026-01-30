@@ -6,6 +6,7 @@ import {
   uploadFilesToRepo,
   repoExists,
 } from "@/lib/github-repo-service";
+import { githubPublishSchema } from "@/lib/validations/github";
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,29 +35,22 @@ export async function POST(request: NextRequest) {
 
     // Get GitHub data from request body (passed from client)
     const body = await request.json();
-    const { githubData } = body;
 
-    if (!githubData) {
-      return Response.json(
-        {
-          success: false,
-          error: "GitHub data is required",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Validate the GitHub data structure
-    if (!githubData.profile || !githubData.profile.username) {
+    // Validate with Zod
+    const validation = githubPublishSchema.safeParse(body);
+    if (!validation.success) {
       return Response.json(
         {
           success: false,
           error:
-            "Invalid GitHub data structure. Profile information is required.",
+            validation.error.issues[0]?.message ||
+            "Invalid GitHub data structure",
         },
         { status: 400 }
       );
     }
+
+    const { githubData } = validation.data;
 
     // Generate repository name
     const repoName = `CrYOPS-${username}`;

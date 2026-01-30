@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { leetcodeGetDetailsSchema } from "@/lib/validations/leetcode";
 
 const LEETCODE_API_BASE = "https://alfa-leetcode-api.onrender.com";
 
@@ -18,39 +19,26 @@ function extractUsernameFromUrl(url: string): string | null {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { url } = body;
 
-    if (!url) {
+    // Validate with Zod
+    const validation = leetcodeGetDetailsSchema.safeParse(body);
+    if (!validation.success) {
       return Response.json(
-        { success: false, error: "URL is required" },
+        {
+          success: false,
+          error: validation.error.issues[0]?.message || "Validation failed",
+        },
         { status: 400 }
       );
     }
 
-    // Validate URL format
-    try {
-      new URL(url);
-    } catch {
-      return Response.json(
-        { success: false, error: "Invalid URL format" },
-        { status: 400 }
-      );
-    }
+    const { url } = validation.data;
 
     // Extract username from URL
     const username = extractUsernameFromUrl(url);
     if (!username) {
       return Response.json(
         { success: false, error: "Could not extract username from URL" },
-        { status: 400 }
-      );
-    }
-
-    // Validate LeetCode domain
-    const urlObj = new URL(url);
-    if (!urlObj.hostname.includes("leetcode.com")) {
-      return Response.json(
-        { success: false, error: "Invalid LeetCode URL" },
         { status: 400 }
       );
     }
