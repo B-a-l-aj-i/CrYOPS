@@ -1,0 +1,47 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+
+# Next.js
+.next
+out
+build
+dist
+
+# Production
+*.tsbuildinfo
+next-env.d.ts
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local env files
+.env
+.env*.local
+
+# Vercel
+.vercel
+
+# Cache
+.prettiercache
+.cache
+.cspellcache
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Exclude globals.css from formatting
+app/globals.css

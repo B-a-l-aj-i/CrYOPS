@@ -19,7 +19,6 @@ import {
 import { validateUserData } from "@/lib/github/helpers";
 import { githubGetDetailsSchema } from "@/lib/validations/github";
 
-
 const GITHUB_CONTRIBUTIONS_API =
   "https://github-contributions-api.jogruber.de/v4";
 export const GITHUB_API_BASE = "https://api.github.com";
@@ -97,7 +96,8 @@ export async function POST(request: NextRequest) {
     ]);
 
     // Handle user API response - log failures for troubleshooting
-    const failures: Array<{ api: string; status: number; statusText: string }> = [];
+    const failures: Array<{ api: string; status: number; statusText: string }> =
+      [];
 
     if (!userResponse.ok) {
       failures.push({
@@ -292,8 +292,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error(
       `[GitHub API] Internal server error while fetching data for ${username || "unknown user"}:`,
       {

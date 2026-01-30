@@ -1,18 +1,19 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export function SelectInspiration() {
   return (
-    <section className="mb-12 border rounded-lg p-7 opacity-50 pointer-events-none">
+    <section className="pointer-events-none mb-12 rounded-lg border p-7 opacity-50">
       <div className="mb-1 flex items-center justify-between">
         <div>
           <h3 className="mb-2 text-xl font-semibold">Selected Inspiration</h3>
-          <p className="text-sm text-muted-foreground">
-            You haven&apos;t selected any inspiration yet, click to view available inspirations.
+          <p className="text-muted-foreground text-sm">
+            You haven&apos;t selected any inspiration yet, click to view
+            available inspirations.
           </p>
         </div>
-        <Link href="/inspiration" className="cursor-not-allowed" >
+        <Link href="/inspiration" className="cursor-not-allowed">
           <Button variant="outline" disabled className="cursor-not-allowed">
             Browse Inspirations
             <ArrowRight className="ml-2 h-4 w-4" />
@@ -20,6 +21,5 @@ export function SelectInspiration() {
         </Link>
       </div>
     </section>
-  )
+  );
 }
-

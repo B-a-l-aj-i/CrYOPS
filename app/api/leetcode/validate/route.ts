@@ -7,7 +7,7 @@ function extractUsernameFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
-    
+
     // Handle leetcode.com/u/username or leetcode.com/username (with or without trailing slash)
     const match = pathname.match(/\/(?:u\/)?([^\/]+)\/?$/);
     return match ? match[1] : null;
@@ -24,7 +24,10 @@ export async function POST(request: NextRequest) {
     const validation = leetcodeValidateSchema.safeParse(body);
     if (!validation.success) {
       return Response.json(
-        { valid: false, error: validation.error.issues[0]?.message || "Validation failed" },
+        {
+          valid: false,
+          error: validation.error.issues[0]?.message || "Validation failed",
+        },
         { status: 400 }
       );
     }
@@ -82,4 +85,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

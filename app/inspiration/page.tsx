@@ -1,20 +1,26 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { ArrowLeft, Search, ExternalLink } from "lucide-react"
-import { useState } from "react"
+import * as React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, Search, ExternalLink } from "lucide-react";
+import { useState } from "react";
 
 interface InspirationSite {
-  id: string
-  title: string
-  description: string
-  url: string
-  category: string
-  image?: string
+  id: string;
+  title: string;
+  description: string;
+  url: string;
+  category: string;
+  image?: string;
 }
 
 // Sample inspiration sites - in production, this would come from an API
@@ -22,7 +28,8 @@ const inspirationSites: InspirationSite[] = [
   {
     id: "1",
     title: "Minimalist Clean",
-    description: "Clean, minimal design with focus on typography and whitespace",
+    description:
+      "Clean, minimal design with focus on typography and whitespace",
     url: "https://example.com/minimalist",
     category: "Minimalist",
   },
@@ -75,28 +82,31 @@ const inspirationSites: InspirationSite[] = [
     url: "https://example.com/photography",
     category: "Photography",
   },
-]
+];
 
 export default function InspirationPage() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const categories = Array.from(new Set(inspirationSites.map((site) => site.category)))
+  const categories = Array.from(
+    new Set(inspirationSites.map((site) => site.category))
+  );
 
   const filteredSites = inspirationSites.filter((site) => {
     const matchesSearch =
       site.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      site.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = !selectedCategory || site.category === selectedCategory
-    return matchesSearch && matchesCategory
-  })
+      site.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      !selectedCategory || site.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background min-h-screen">
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
-          <Link href="/" className="text-2xl font-bold text-primary">
+          <Link href="/" className="text-primary text-2xl font-bold">
             CrYOPS
           </Link>
           <Link href="/">
@@ -112,16 +122,19 @@ export default function InspirationPage() {
       <main className="container mx-auto max-w-7xl px-6 py-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold tracking-tight">Inspiration Sites</h1>
+          <h1 className="mb-2 text-3xl font-bold tracking-tight">
+            Inspiration Sites
+          </h1>
           <p className="text-muted-foreground">
-            Browse through curated portfolio inspiration sites from around the web
+            Browse through curated portfolio inspiration sites from around the
+            web
           </p>
         </div>
 
         {/* Search and Filter */}
         <div className="mb-8 space-y-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
             <Input
               type="text"
               placeholder="Search inspirations..."
@@ -160,9 +173,9 @@ export default function InspirationPage() {
                 className="group cursor-pointer transition-all hover:shadow-lg"
               >
                 <CardHeader>
-                  <div className="mb-4 aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                    <div className="flex h-full items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-                      <span className="text-sm font-medium text-muted-foreground">
+                  <div className="bg-muted mb-4 aspect-video w-full overflow-hidden rounded-lg">
+                    <div className="from-primary/20 to-primary/5 flex h-full items-center justify-center bg-gradient-to-br">
+                      <span className="text-muted-foreground text-sm font-medium">
                         {site.title}
                       </span>
                     </div>
@@ -170,18 +183,22 @@ export default function InspirationPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <CardTitle className="mb-1">{site.title}</CardTitle>
-                      <span className="text-xs text-muted-foreground">{site.category}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {site.category}
+                      </span>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <CardDescription className="mb-4">{site.description}</CardDescription>
+                  <CardDescription className="mb-4">
+                    {site.description}
+                  </CardDescription>
                   <div className="flex items-center justify-between">
                     <a
                       href={site.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline"
+                      className="text-primary text-sm hover:underline"
                       onClick={(e) => e.stopPropagation()}
                     >
                       View Site
@@ -197,11 +214,12 @@ export default function InspirationPage() {
           </div>
         ) : (
           <div className="py-12 text-center">
-            <p className="text-muted-foreground">No inspiration sites found matching your search.</p>
+            <p className="text-muted-foreground">
+              No inspiration sites found matching your search.
+            </p>
           </div>
         )}
       </main>
     </div>
-  )
+  );
 }
-
