@@ -1,4 +1,4 @@
-import type { GitHubData } from "@/app/store";
+import type { GithubPublishData } from "@/lib/validations/github";
 
 export interface TemplateFile {
   path: string;
@@ -6,10 +6,11 @@ export interface TemplateFile {
 }
 
 /**
- * Generate a complete Vite + React portfolio template from GitHub data
+ * Generate a complete Vite + React portfolio template from GitHub data.
+ * Uses the validated publish payload shape (schema as source of truth).
  */
 export function generateTemplate(
-  githubData: GitHubData,
+  githubData: GithubPublishData,
   username: string
 ): TemplateFile[] {
   const files: TemplateFile[] = [];

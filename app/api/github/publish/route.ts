@@ -7,7 +7,6 @@ import {
   repoExists,
 } from "@/lib/github-repo-service";
 import { githubPublishSchema } from "@/lib/validations/github";
-import type { GitHubData } from "@/app/store";
 
 export async function POST(request: NextRequest) {
   try {
@@ -51,7 +50,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { githubData } = validation.data as { githubData: GitHubData };
+    const { githubData } = validation.data;
 
     // Generate repository name
     const repoName = `CrYOPS-${username}`;

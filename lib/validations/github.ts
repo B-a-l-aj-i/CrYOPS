@@ -7,17 +7,23 @@ export const githubValidateSchema = z.object({
 
 // GitHub get-details endpoint schema
 export const githubGetDetailsSchema = z.object({
-  url: z.string().url("Invalid URL format").refine(
-    (url) => {
-      try {
-        const urlObj = new URL(url);
-        return urlObj.hostname === "github.com";
-      } catch {
-        return false;
+  url: z
+    .string()
+    .url("Invalid URL format")
+    .refine(
+      (url) => {
+        try {
+          const urlObj = new URL(url);
+          return urlObj.hostname === "github.com";
+        } catch {
+          return false;
+        }
+      },
+      {
+        message:
+          "Invalid GitHub URL format. Please provide a valid GitHub profile URL.",
       }
-    },
-    { message: "Invalid GitHub URL format. Please provide a valid GitHub profile URL." }
-  ),
+    ),
 });
 
 // GitHub publish endpoint schema
@@ -50,3 +56,9 @@ export const githubPublishSchema = z.object({
     profileUrl: z.string(),
   }),
 });
+
+/** Request body type for the GitHub publish endpoint (schema as source of truth) */
+export type GithubPublishBody = z.infer<typeof githubPublishSchema>;
+
+/** Validated githubData shape from the publish endpoint */
+export type GithubPublishData = GithubPublishBody["githubData"];
