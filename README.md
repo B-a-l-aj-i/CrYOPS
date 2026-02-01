@@ -1,6 +1,6 @@
 # CrYOPS
 
-**Create Your Own Portfolio Site** - A powerful Next.js application that helps you build and
+**Cr**eate **Y**our **O**wn **P**ortfolio **S**ite - A powerful Next.js application that helps you build and
 deploy a professional portfolio website by integrating your data from multiple platforms.
 
 ## 🚀 Features
