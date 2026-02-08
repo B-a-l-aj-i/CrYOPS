@@ -1,11 +1,12 @@
 'use client'
 
 import { useRouter } from "next/navigation";
-import { useGithubStore, useDeploymentStore } from "../store";
+import { useGithubStore, useDeploymentStore, useCanvasStore } from "../store";
 import { Card, CardContent } from "@/components/ui/card";
 import { PublishToGitHubButton } from "@/components/publish-to-github-button";
 import { DeployToVercelButton } from "@/components/deploy-to-vercel-button";
-import About from "@/components/about";
+import { Canvas } from "@/components/canvas/Canvas";
+import { FloatingToolbar } from "@/components/canvas/FloatingToolbar";
 import { AlertCircle, Github, ExternalLink, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -15,12 +16,13 @@ export default function EditYOPSPage() {
   
   const githubData = useGithubStore((state) => state.githubData);
   const hasHydrated = useGithubStore((state) => state._hasHydrated);
+  const canvasHasHydrated = useCanvasStore((state) => state._hasHydrated);
   
   // Deployment state
   const { isGithubDeployed, repoUrl, vercelUrl } = useDeploymentStore();
 
   // Show loading while store is hydrating from localStorage
-  if (!hasHydrated) {
+  if (!hasHydrated || !canvasHasHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8">
         <div className="text-center">
@@ -91,9 +93,16 @@ export default function EditYOPSPage() {
         </div>
       </header>
 
-      {/* Portfolio content */}
-      <main>
-        <About githubData={githubData} />
+      {/* Canvas Editor */}
+      <main className="container mx-auto max-w-full px-6 py-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-slate-800">Portfolio Canvas Editor</h2>
+          <p className="text-sm text-slate-600 mt-1">
+            Drag and drop components to customize your portfolio layout
+          </p>
+        </div>
+        <Canvas />
+        <FloatingToolbar />
       </main>
 
       {/* Deployment controls */}

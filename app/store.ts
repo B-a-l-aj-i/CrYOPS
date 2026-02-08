@@ -219,3 +219,76 @@ export const useDeploymentStore = create<DeploymentStore>()(
     }
   )
 );
+
+// Canvas editor store for drag-and-drop functionality
+export interface CanvasCard {
+  id: string;
+  x: number;
+  y: number;
+  type: 'github' | 'leetcode' | 'resume' | 'blog' | 'custom';
+  content: any;
+  width?: number;
+  height?: number;
+}
+
+interface CanvasStore {
+  cards: CanvasCard[];
+  _hasHydrated: boolean;
+  addCard: (card: CanvasCard) => void;
+  updateCardPosition: (id: string, x: number, y: number) => void;
+  updateCardContent: (id: string, content: any) => void;
+  removeCard: (id: string) => void;
+  resetCanvas: () => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
+}
+
+const defaultCards: CanvasCard[] = [
+  { id: 'github-1', x: 100, y: 100, type: 'github', content: null, width: 300, height: 200 },
+  { id: 'leetcode-1', x: 450, y: 100, type: 'leetcode', content: null, width: 300, height: 200 },
+  { id: 'resume-1', x: 800, y: 100, type: 'resume', content: null, width: 300, height: 200 },
+  { id: 'blog-1', x: 1150, y: 100, type: 'blog', content: null, width: 300, height: 200 },
+];
+
+export const useCanvasStore = create<CanvasStore>()(
+  persist(
+    (set) => ({
+      cards: defaultCards,
+      _hasHydrated: false,
+      addCard: (card: CanvasCard) => 
+        set((state) => ({ 
+          cards: [...state.cards, card] 
+        })),
+      updateCardPosition: (id: string, x: number, y: number) => 
+        set((state) => ({
+          cards: state.cards.map(card => 
+            card.id === id ? { ...card, x, y } : card
+          )
+        })),
+      updateCardContent: (id: string, content: any) => 
+        set((state) => ({
+          cards: state.cards.map(card => 
+            card.id === id ? { ...card, content } : card
+          )
+        })),
+      removeCard: (id: string) => 
+        set((state) => ({
+          cards: state.cards.filter(card => card.id !== id)
+        })),
+      resetCanvas: () => 
+        set({ cards: defaultCards }),
+      setHasHydrated: (hasHydrated: boolean) => set({ _hasHydrated: hasHydrated }),
+    }),
+    {
+      name: "canvas-editor-data",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        cards: state.cards,
+        // Don't persist _hasHydrated - it's ephemeral
+      }),
+      onRehydrateStorage: () => (state) => {
+        // Mark as hydrated after rehydration completes
+        state?.setHasHydrated(true);
+      },
+    }
+  )
+);

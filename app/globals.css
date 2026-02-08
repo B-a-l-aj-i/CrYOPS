@@ -80,3 +80,52 @@
     font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   }
 }
+
+/* Canvas Editor Styles */
+@layer components {
+  .canvas-container {
+    @apply relative;
+  }
+
+  .draggable-card {
+    @apply absolute cursor-grab transition-shadow;
+    user-select: none;
+  }
+
+  .draggable-card:active {
+    @apply cursor-grabbing;
+  }
+
+  /* Smooth animations for drag states */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slide-in-from-bottom {
+    from {
+      transform: translateY(10px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  .fade-in {
+    animation: fade-in 0.2s ease-out;
+  }
+
+  .slide-in-from-bottom-2 {
+    animation: slide-in-from-bottom 0.2s ease-out;
+  }
+}
