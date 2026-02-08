@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { githubData } = validation.data;
+    const { githubData, templateConfig } = validation.data;
 
     // Generate repository name
     const repoName = `CrYOPS-${username}`;
@@ -70,8 +70,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate template files
-    const templateFiles = generateTemplate(githubData, username);
+    // Generate template files (with optional custom config)
+    const templateFiles = generateTemplate(
+      githubData,
+      username,
+      templateConfig
+    );
 
     // Create repository
     const repo = await createGitHubRepo(session.accessToken, {
