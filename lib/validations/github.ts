@@ -26,6 +26,85 @@ export const githubGetDetailsSchema = z.object({
     ),
 });
 
+// Template config schema (optional — when omitted, defaults are used)
+const templateConfigSchema = z
+  .object({
+    theme: z.object({
+      colors: z.object({
+        background: z.string(),
+        foreground: z.string(),
+        card: z.string(),
+        cardForeground: z.string(),
+        primary: z.string(),
+        primaryForeground: z.string(),
+        secondary: z.string(),
+        secondaryForeground: z.string(),
+        muted: z.string(),
+        mutedForeground: z.string(),
+        border: z.string(),
+        accent: z.string(),
+        accentForeground: z.string(),
+      }),
+      borderRadius: z.string(),
+    }),
+    typography: z.object({
+      fontFamily: z.string(),
+      headingFontFamily: z.string().optional(),
+      scale: z.object({
+        xs: z.string(),
+        sm: z.string(),
+        base: z.string(),
+        lg: z.string(),
+        xl: z.string(),
+        "2xl": z.string(),
+        "3xl": z.string(),
+      }),
+      headingWeight: z.string(),
+      bodyWeight: z.string(),
+      lineHeight: z.string(),
+    }),
+    spacing: z.object({
+      containerMaxWidth: z.string(),
+      containerPadding: z.string(),
+      sectionGap: z.string(),
+      cardPadding: z.string(),
+      componentGap: z.string(),
+    }),
+    layout: z.object({
+      gridColumns: z.string(),
+      gridColumnsMobile: z.string(),
+      breakpoint: z.string(),
+      gridGap: z.string(),
+      components: z.array(
+        z.object({
+          componentType: z.enum(["About", "GitHubStats"]),
+          gridColumn: z.string().optional(),
+          gridRow: z.string().optional(),
+          visible: z.boolean(),
+        })
+      ),
+    }),
+    componentStyles: z.object({
+      about: z.object({
+        avatarSize: z.number(),
+        avatarBorderClass: z.string(),
+        nameClass: z.string(),
+        bioClass: z.string(),
+        linkButtonClass: z.string(),
+        sectionPadding: z.string(),
+      }),
+      githubStats: z.object({
+        cardBgClass: z.string(),
+        statValueClass: z.string(),
+        statLabelClass: z.string(),
+        sectionTitleClass: z.string(),
+        badgeClass: z.string(),
+        innerCardClass: z.string(),
+      }),
+    }),
+  })
+  .optional();
+
 // GitHub publish endpoint schema
 export const githubPublishSchema = z.object({
   githubData: z.object({
@@ -55,6 +134,7 @@ export const githubPublishSchema = z.object({
     topActivelyUsedRepos: z.array(z.any()),
     profileUrl: z.string(),
   }),
+  templateConfig: templateConfigSchema,
 });
 
 /** Request body type for the GitHub publish endpoint (schema as source of truth) */

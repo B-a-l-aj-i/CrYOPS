@@ -1,4 +1,9 @@
 import type { GithubPublishData } from "@/lib/validations/github";
+import type { TemplateConfig } from "@/types/template-config";
+import { DEFAULT_TEMPLATE_CONFIG } from "./generator/default-config";
+import { generateIndexCSS } from "./generator/generate-css";
+import { generateAboutComponent } from "./generator/generate-about";
+import { generateGitHubStatsComponent } from "./generator/generate-github-stats";
 
 export interface TemplateFile {
   path: string;
@@ -7,15 +12,18 @@ export interface TemplateFile {
 
 /**
  * Generate a complete Vite + React portfolio template from GitHub data.
- * Uses the validated publish payload shape (schema as source of truth).
+ * All visual properties (colors, typography, spacing, layout) are driven
+ * by the TemplateConfig — no hardcoded values.
  */
 export function generateTemplate(
   githubData: GithubPublishData,
-  username: string
+  username: string,
+  config: TemplateConfig = DEFAULT_TEMPLATE_CONFIG
 ): TemplateFile[] {
   const files: TemplateFile[] = [];
 
-  // package.json
+  // ── Scaffold files (infrastructure, not style-dependent) ──
+
   files.push({
     path: "package.json",
     content: JSON.stringify(
@@ -24,9 +32,7 @@ export function generateTemplate(
         private: true,
         version: "0.1.0",
         type: "module",
-        engines: {
-          node: "20.x",
-        },
+        engines: { node: "20.x" },
         scripts: {
           dev: "vite",
           build: "tsc && vite build",
@@ -57,7 +63,6 @@ export function generateTemplate(
     ),
   });
 
-  // vite.config.ts
   files.push({
     path: "vite.config.ts",
     content: `import { defineConfig } from 'vite'
@@ -69,7 +74,6 @@ export default defineConfig({
 `,
   });
 
-  // tsconfig.json
   files.push({
     path: "tsconfig.json",
     content: JSON.stringify(
@@ -99,7 +103,6 @@ export default defineConfig({
     ),
   });
 
-  // tsconfig.node.json
   files.push({
     path: "tsconfig.node.json",
     content: JSON.stringify(
@@ -118,7 +121,6 @@ export default defineConfig({
     ),
   });
 
-  // index.html
   files.push({
     path: "index.html",
     content: `<!doctype html>
@@ -137,7 +139,6 @@ export default defineConfig({
 `,
   });
 
-  // .gitignore
   files.push({
     path: ".gitignore",
     content: `# Logs
@@ -167,7 +168,6 @@ dist-ssr
 `,
   });
 
-  // README.md
   files.push({
     path: "README.md",
     content: `# ${githubData.profile.name}'s Portfolio
@@ -193,7 +193,6 @@ This site can be deployed to Vercel, Netlify, or any static hosting service.
 `,
   });
 
-  // tailwind.config.js
   files.push({
     path: "tailwind.config.js",
     content: `/** @type {import('tailwindcss').Config} */
@@ -210,7 +209,6 @@ export default {
 `,
   });
 
-  // postcss.config.js
   files.push({
     path: "postcss.config.js",
     content: `export default {
@@ -223,7 +221,6 @@ export default {
 `,
   });
 
-  // src/main.tsx
   files.push({
     path: "src/main.tsx",
     content: `import React from 'react'
@@ -239,52 +236,26 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 `,
   });
 
-  // src/index.css
   files.push({
-    path: "src/index.css",
-    content: `@import "tailwindcss";
-
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 173 80% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --border: 214.3 31.8% 91.4%;
-    --radius: 0.5rem;
-  }
-}
-
-* {
-  border-color: hsl(var(--border));
-}
-
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-`,
+    path: "public/vite.svg",
+    content: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="grad1" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%"><stop offset="0%" stop-color="#41D1FF"></stop><stop offset="100%" stop-color="#BD34FE"></stop></linearGradient><linearGradient id="grad2" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%"><stop offset="0%" stop-color="#FFEA83"></stop><stop offset="8.333%" stop-color="#FFDD35"></stop><stop offset="100%" stop-color="#FFA800"></stop></linearGradient></defs><path fill="url(#grad1)" d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.666 4.796 6.877 9.62Z"></path><path fill="url(#grad2)" d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path></svg>`,
   });
 
-  // src/data/github-data.json
+  // ── Config-driven files ──
+
+  // CSS with theme colors and typography from config
+  files.push({
+    path: "src/index.css",
+    content: generateIndexCSS(config.theme, config.typography),
+  });
+
+  // GitHub data JSON
   files.push({
     path: "src/data/github-data.json",
     content: JSON.stringify(githubData, null, 2),
   });
 
-  // src/utils.ts
+  // Utility functions
   files.push({
     path: "src/utils.ts",
     content: `import { type ClassValue, clsx } from "clsx"
@@ -296,7 +267,7 @@ export function cn(...inputs: ClassValue[]) {
 `,
   });
 
-  // src/components/ui/card.tsx
+  // Card UI component
   files.push({
     path: "src/components/ui/card.tsx",
     content: `import * as React from "react"
@@ -368,62 +339,7 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent }
 `,
   });
 
-  // Generate About component
-  files.push({
-    path: "src/components/About.tsx",
-    content: generateAboutComponent(),
-  });
-
-  // Generate GitHubStats component
-  files.push({
-    path: "src/components/GitHubStats.tsx",
-    content: generateGitHubStatsComponent(),
-  });
-
-  // src/App.tsx
-  files.push({
-    path: "src/App.tsx",
-    content: `import { useState, useEffect } from "react"
-import { Loader2 } from "lucide-react"
-import About from "./components/About"
-import githubData from "./data/github-data.json"
-import type { GitHubData } from "./types"
-
-function App() {
-  const [data, setData] = useState<GitHubData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    // Simulate loading
-    setTimeout(() => {
-      setData(githubData as GitHubData)
-      setIsLoading(false)
-    }, 100)
-  }, [])
-
-  if (isLoading || !data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-          <p className="text-xs text-slate-500 font-medium">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="min-h-screen bg-white">
-      <About githubData={data} />
-    </div>
-  )
-}
-
-export default App
-`,
-  });
-
-  // src/types.ts
+  // Types for the generated portfolio
   files.push({
     path: "src/types.ts",
     content: `export interface SanitizedRepo {
@@ -506,541 +422,128 @@ export interface GitHubData {
 `,
   });
 
-  // public/vite.svg (placeholder - simple Vite logo)
+  // ── Dynamic components driven by config ──
+
   files.push({
-    path: "public/vite.svg",
-    content: `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="grad1" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%"><stop offset="0%" stop-color="#41D1FF"></stop><stop offset="100%" stop-color="#BD34FE"></stop></linearGradient><linearGradient id="grad2" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%"><stop offset="0%" stop-color="#FFEA83"></stop><stop offset="8.333%" stop-color="#FFDD35"></stop><stop offset="100%" stop-color="#FFA800"></stop></linearGradient></defs><path fill="url(#grad1)" d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.666 4.796 6.877 9.62Z"></path><path fill="url(#grad2)" d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path></svg>`,
+    path: "src/components/About.tsx",
+    content: generateAboutComponent(config.componentStyles.about),
+  });
+
+  files.push({
+    path: "src/components/GitHubStats.tsx",
+    content: generateGitHubStatsComponent(
+      config.componentStyles.githubStats,
+      config.spacing
+    ),
+  });
+
+  // ── App.tsx with CSS Grid layout from config ──
+
+  files.push({
+    path: "src/App.tsx",
+    content: generateAppComponent(config),
   });
 
   return files;
 }
 
-function generateAboutComponent(): string {
+/**
+ * Generate App.tsx with CSS Grid layout driven by TemplateConfig.
+ * Components are rendered as grid cells based on config.layout.components.
+ */
+function generateAppComponent(config: TemplateConfig): string {
+  const { layout, spacing } = config;
+
+  // Build component imports and JSX based on visible components
+  const visibleComponents = layout.components.filter((c) => c.visible);
+
+  const hasAbout = visibleComponents.some((c) => c.componentType === "About");
+  const hasGitHubStats = visibleComponents.some(
+    (c) => c.componentType === "GitHubStats"
+  );
+
+  // Build imports
+  const imports: string[] = [];
+  if (hasAbout) imports.push(`import About from "./components/About"`);
+  if (hasGitHubStats)
+    imports.push(`import { GitHubStats } from "./components/GitHubStats"`);
+
+  // Build grid cells JSX
+  const gridCells = visibleComponents
+    .map((c) => {
+      const styleProps: string[] = [];
+      if (c.gridColumn) styleProps.push(`gridColumn: '${c.gridColumn}'`);
+      if (c.gridRow) styleProps.push(`gridRow: '${c.gridRow}'`);
+      const styleAttr =
+        styleProps.length > 0 ? ` style={{ ${styleProps.join(", ")} }}` : "";
+
+      if (c.componentType === "About") {
+        return `        <div${styleAttr}>
+          <About githubData={data} />
+        </div>`;
+      }
+      if (c.componentType === "GitHubStats") {
+        return `        <div${styleAttr}>
+          <GitHubStats data={data} />
+        </div>`;
+      }
+      return "";
+    })
+    .filter(Boolean)
+    .join("\n\n");
+
   return `import { useState, useEffect } from "react"
-import { GithubIcon, GlobeIcon, Loader2 } from "lucide-react"
-import { GitHubStats } from "./GitHubStats"
-import { GitHubCalendar } from "react-github-calendar"
-import type { GitHubData } from "../types"
+import { Loader2 } from "lucide-react"
+${imports.join("\n")}
+import githubData from "./data/github-data.json"
+import type { GitHubData } from "./types"
 
-interface AboutProps {
-  githubData: GitHubData
-}
-
-export default function About({ githubData }: AboutProps) {
-  const profile = {
-    avatar: githubData.profile.avatar,
-    name: githubData.profile.name,
-    bio: githubData.profile.bio,
-    githubUrl: githubData.profileUrl,
-    blog: githubData.profile.blog,
-  }
-
-  return (
-    <div className="flex flex-col justify-center items-center py-12">
-      <div className="inline-block mb-6">
-        <img
-          src={profile.avatar}
-          alt={profile.name}
-          width={120}
-          height={120}
-          className="rounded-full border-4 border-white shadow-xl"
-        />
-      </div>
-
-      <h1 className="text-3xl font-bold text-slate-800 mb-4">{profile.name}</h1>
-
-      <p className="text-xl text-slate-400 max-w-5xl mx-auto mb-6 leading-relaxed text-center">
-        {profile.bio}
-      </p>
-
-      <div className="flex justify-center gap-4">
-        <a
-          href={profile.githubUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="h-11 px-6 bg-blue-50 rounded-2xl border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 hover:shadow-sm transition-all duration-300"
-        >
-          <GithubIcon className="w-4 h-4" />
-          GitHub
-        </a>
-
-        {profile.blog && (
-          <a
-            href={profile.blog}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-11 px-6 bg-blue-50 rounded-2xl border-slate-200 text-sm font-medium text-slate-700 flex items-center gap-2 hover:shadow-sm transition-all duration-300"
-          >
-            <GlobeIcon className="w-4 h-4" />
-            Blog or Portfolio
-          </a>
-        )}
-      </div>
-
-      <div className="w-full mt-12">
-        <GitHubStats data={githubData} />
-      </div>
-
-      <div className="w-full max-w-fit mx-auto px-4 mt-12">
-        <GitHubCalendarWrapper username={githubData.profile.username} />
-      </div>
-    </div>
-  )
-}
-
-function GitHubCalendarWrapper({ username }: { username: string }) {
+function App() {
+  const [data, setData] = useState<GitHubData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    setTimeout(() => {
+      setData(githubData as GitHubData)
       setIsLoading(false)
-    }, 1500)
-
-    return () => clearTimeout(timer)
+    }, 100)
   }, [])
 
+  if (isLoading || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
+          <p className="text-xs text-slate-500 font-medium">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="relative min-h-[200px]">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-50/90 rounded-lg z-10 backdrop-blur-sm">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-6 h-6 animate-spin text-slate-400" />
-            <p className="text-xs text-slate-500 font-medium">
-              Loading contribution data...
-            </p>
-          </div>
-        </div>
-      )}
-      <div
-        className={\`\${
-          isLoading ? "opacity-0 pointer-events-none" : "opacity-100"
-        } transition-opacity duration-500\`}
-      >
-        <div className="overflow-x-auto">
-          <GitHubCalendar
-            username={username}
-            blockSize={19.5}
-            blockMargin={4}
-            fontSize={14}
-            blockRadius={1}
-            colorScheme="light"
-            theme={{
-              light: [
-                "#ebedf0",
-                "#9be9a8",
-                "#40c463",
-                "#30a14e",
-                "#216e39",
-              ],
-            }}
-            style={{
-              maxWidth: "100%",
-              margin: "0 auto",
-            }}
-          />
-        </div>
+    <div className="min-h-screen bg-white">
+      <style>{\`
+        .portfolio-grid {
+          display: grid;
+          grid-template-columns: ${layout.gridColumnsMobile};
+          gap: ${layout.gridGap};
+          max-width: ${spacing.containerMaxWidth};
+          margin: 0 auto;
+          padding: ${spacing.containerPadding};
+        }
+        @media (min-width: ${layout.breakpoint}) {
+          .portfolio-grid {
+            grid-template-columns: ${layout.gridColumns};
+          }
+        }
+      \`}</style>
+      <div className="portfolio-grid">
+${gridCells}
       </div>
     </div>
   )
 }
-`;
-}
 
-function generateGitHubStatsComponent(): string {
-  return `import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "./ui/card"
-import type { GitHubData, SanitizedRepo } from "../types"
-
-interface GitHubStatsProps {
-  data: GitHubData
-}
-
-export function GitHubStats({ data }: GitHubStatsProps) {
-  const {
-    profile,
-    contributions,
-    mostActiveRepoThisMonth,
-    activelyMaintainedRepos,
-    totalStars,
-    bestRepo,
-    topActivelyUsedRepos,
-  } = data
-
-  return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="bg-slate-50">
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 mb-1">
-                  TOTAL CONTRIBUTIONS
-                </div>
-                <div className="text-3xl font-bold text-slate-800 mb-1">
-                  {contributions.total.toLocaleString()}
-                </div>
-                <div className="text-xs text-green-600">
-                  +{contributions.yearOverYearChangePercentage || 0}% vs last year
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-50">
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 mb-1">
-                  TOTAL ISSUES/PULL REQUESTS
-                </div>
-                <div className="text-3xl font-bold text-slate-800 mb-1">
-                  {contributions.issues.total + contributions.pullRequests.total}
-                </div>
-                <div className="text-xs text-slate-600">
-                  {contributions.issues.closed + contributions.pullRequests.closed} closed
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 mb-1">
-                  AVERAGE COMMITS (OVERALL)
-                </div>
-                <div className="text-3xl font-bold text-slate-800 mb-1">
-                  {contributions.overall.averageDailyCommits.toFixed(1)} / day
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-50">
-              <CardContent className="p-4">
-                <div className="text-xs text-slate-600 mb-1">
-                  BEST REPO STAR COUNT
-                </div>
-                <div className="text-3xl font-bold text-slate-800 mb-1">
-                  {bestRepo?.stars || 0} ⭐
-                </div>
-                <a href={"https://github.com/" + bestRepo?.author + "/" + bestRepo?.name} target="_blank" rel="noopener noreferrer">
-                  <div className="text-xs text-slate-600">
-                    {bestRepo?.name || "N/A"}
-                  </div>
-                </a>
-              </CardContent>
-            </Card>
-          </div>
-
-          {mostActiveRepoThisMonth && (
-            <Card className="bg-slate-50">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <a
-                        href={
-                          "https://github.com/" +
-                          mostActiveRepoThisMonth.author +
-                          "/" +
-                          mostActiveRepoThisMonth.name
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <h3 className="font-semibold text-slate-800">
-                          {mostActiveRepoThisMonth.author}/{mostActiveRepoThisMonth.name}
-                        </h3>
-                      </a>
-                    </div>
-                    <p className="text-sm text-slate-600 mb-3">
-                      {mostActiveRepoThisMonth.description || "No description"}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-slate-600">
-                      <div className="flex items-center gap-1">
-                        <div
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            backgroundColor: mostActiveRepoThisMonth.languageColor,
-                          }}
-                        />
-                        <span>{mostActiveRepoThisMonth.language || "N/A"}</span>
-                      </div>
-                      <span>{mostActiveRepoThisMonth.stars} ⭐</span>
-                      <span>{mostActiveRepoThisMonth.activityDuration}</span>
-                    </div>
-                  </div>
-                  <div className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                    Most used this month
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="bg-slate-50">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Coding Habits</CardTitle>
-              <CardDescription className="text-xs">
-                Based on last 90 days of activity
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <div className="text-xs text-slate-600 mb-1">
-                    Most active Day(Overall)
-                  </div>
-                  <div className="text-lg font-semibold text-slate-800 mb-1">
-                    {contributions.overall.mostActiveDay}
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    {contributions.last6Months.weekendPercentage}% weekend
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <div className="text-xs text-slate-600 mb-1">
-                    Longest streak
-                  </div>
-                  <div className="text-lg font-semibold text-slate-800 mb-1">
-                    {contributions.longestStreak} days
-                  </div>
-                  <div className="text-xs text-slate-500">No days skipped</div>
-                </div>
-
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <div className="text-xs text-slate-600 mb-1">
-                    Weekday vs weekend
-                  </div>
-                  <div className="text-lg font-semibold text-slate-800 mb-1">
-                    {contributions.last6Months.weekdayWeekendBreakdown.weekday}% /{" "}
-                    {contributions.last6Months.weekdayWeekendBreakdown.weekend}%
-                  </div>
-                  <div className="text-xs text-slate-500">
-                    Weekend refactors
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-lg p-3 border border-slate-200">
-                  <div className="text-xs text-slate-600 mb-1">
-                    Active years
-                  </div>
-                  <div className="text-sm font-medium text-slate-800">
-                    {contributions.activeYears.join(" · ")}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-50 pb-3">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Contribution Window</CardTitle>
-              <CardDescription className="text-xs">
-                Across owned & contributed repos
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-white rounded-lg p-4 border border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-800 mb-3">
-                  Last 6 months
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">
-                      Total Commits
-                    </div>
-                    <div className="text-lg font-bold text-slate-800">
-                      {contributions.last6Months.recentContributions.toLocaleString()}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">
-                      Weekend Activity
-                    </div>
-                    <div className="text-lg font-bold text-slate-800">
-                      {contributions.last6Months.weekendPercentage}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">Best Day</div>
-                    <div className="text-sm font-medium text-slate-800">
-                      {contributions.last6Months.bestCommit?.date || "N/A"}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {contributions.last6Months.bestCommit?.count || 0} commits
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600">Avg per day:</span>
-                    <span className="font-medium text-slate-800">
-                      {contributions.last6Months.averageDailyCommits.toFixed(1)} commits
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg p-4 border border-slate-200">
-                <h4 className="text-sm font-semibold text-slate-800 mb-3">
-                  Last 12 months
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">
-                      Total Commits
-                    </div>
-                    <div className="text-lg font-bold text-slate-800">
-                      {contributions.last1Year.recentContributions.toLocaleString()}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">
-                      Weekend Activity
-                    </div>
-                    <div className="text-lg font-bold text-slate-800">
-                      {contributions.last1Year.weekendPercentage}%
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-500 mb-1">Best Day</div>
-                    <div className="text-sm font-medium text-slate-800">
-                      {contributions.last1Year.bestCommit?.date || "N/A"}
-                    </div>
-                    <div className="text-xs text-slate-500">
-                      {contributions.last1Year.bestCommit?.count || 0} commits
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-slate-200">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600">Avg per day:</span>
-                    <span className="font-medium text-slate-800">
-                      {contributions.last1Year.averageDailyCommits.toFixed(1)} commits
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <div className="px-6 pb-4">
-              <p className="text-xs text-slate-500">
-                These stats update automatically from your GitHub profile - no
-                manual input required.
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-            <Card className="bg-slate-50">
-              <CardContent className="p-6 pb-7">
-                <div className="text-xs text-slate-600 mb-1">
-                  Public repositories
-                </div>
-                <div className="text-2xl font-bold text-slate-800 mb-1">
-                  {profile.publicRepos}
-                </div>
-                <div className="text-xs text-slate-600">
-                  {activelyMaintainedRepos.length} actively maintained
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-50">
-              <CardContent className="p-6 pb-7">
-                <div className="text-xs text-slate-600 mb-1">Total stars</div>
-                <div className="text-2xl font-bold text-slate-800 mb-1">
-                  {totalStars.toLocaleString()} ⭐
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-50">
-              <CardContent className="p-6 pb-7">
-                <div className="text-xs text-slate-600 mb-1">Followers</div>
-                <div className="text-2xl font-bold text-slate-800 mb-1">
-                  {profile.followers}
-                </div>
-                <div className="text-xs text-slate-600">
-                  Following {profile.following}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-50">
-              <CardContent className="p-6 pb-7">
-                <div className="text-xs text-slate-600 mb-1">
-                  First commit on GitHub
-                </div>
-                <div className="text-lg font-semibold text-slate-800 mb-1">
-                  {contributions.firstCommitDate
-                    ? contributions.firstCommitDate
-                        .split(" ")
-                        .slice(1)
-                        .join(" ")
-                    : "N/A"}
-                </div>
-                <div className="text-xs text-slate-600">
-                  {contributions.codingYears || "N/A"}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Top 6 Actively Used Repos */}
-          <div className="space-y-3">
-            <h3 className="text-lg font-semibold text-slate-800">Active Repos</h3>
-            {topActivelyUsedRepos.map((repo: SanitizedRepo, index: number) => (
-              <Card key={index} className="bg-slate-50">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <a
-                          href={
-                            "https://github.com/" +
-                            repo.author +
-                            "/" +
-                            repo.name
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <h3 className="font-semibold text-slate-800">
-                            {repo.author}/{repo.name}
-                          </h3>
-                        </a>
-                      </div>
-                      <p className="text-sm text-slate-600 mb-3 line-clamp-1">
-                        {repo.description || "No description"}
-                      </p>
-                      <div className="flex items-center gap-4 text-xs text-slate-600">
-                        <div className="flex items-center gap-1">
-                          <div
-                            className="w-2 h-2 rounded-full"
-                            style={{ backgroundColor: repo.languageColor }}
-                          />
-                          <span>{repo.language || "N/A"}</span>
-                        </div>
-                        <span>{repo.stars} ⭐</span>
-                        <span>{repo.activityDuration}</span>
-                      </div>
-                    </div>
-                    <div className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                      #{index + 1}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
+export default App
 `;
 }

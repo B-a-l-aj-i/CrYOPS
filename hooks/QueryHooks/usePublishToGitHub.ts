@@ -2,6 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useDeploymentStore } from "@/app/store";
 import { postSuccessApi } from "@/lib/apiHelpers/api";
 import type { GitHubData } from "@/app/store";
+import type { TemplateConfig } from "@/types/template-config";
 
 interface PublishToGitHubResponse {
   success: boolean;
@@ -20,6 +21,7 @@ interface PublishToGitHubResponse {
 
 interface PublishToGitHubParams {
   githubData: GitHubData;
+  templateConfig?: TemplateConfig;
 }
 
 interface UsePublishToGitHubOptions {
@@ -29,10 +31,11 @@ interface UsePublishToGitHubOptions {
 
 async function publishToGitHub({
   githubData,
+  templateConfig,
 }: PublishToGitHubParams): Promise<PublishToGitHubResponse> {
   return postSuccessApi<PublishToGitHubResponse["data"]>(
     "/api/github/publish",
-    { githubData }
+    { githubData, templateConfig }
   );
 }
 
