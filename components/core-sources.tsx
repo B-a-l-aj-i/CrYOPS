@@ -28,7 +28,7 @@ export function CoreSources() {
         <CodingPlatforms />
       </div>
 
-      <div className="pointer-events-none mt-6 space-y-2 opacity-50">
+      <div className="mt-6 space-y-2">
         <Label className="text-sm font-medium">Resume / CV</Label>
         <FileUpload accept=".pdf,.docx" maxSize={10 * 1024 * 1024} />
       </div>
